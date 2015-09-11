@@ -1,0 +1,263 @@
+////////////////////////////// foundation lib ///////////////////////////////////
+@import '../../../bower_components/foundation/scss/foundation/_settings.scss'; 
+$include-html-classes: false;
+$include-html-global-classes: false;
+
+@import '../../../bower_components/foundation/scss/foundation.scss'; 
+
+////////////////////////////// mixins	/////////////////////////////////////////
+@mixin droppableTarget {
+	background-color: wheat !important;
+	z-index: 5 !important;	
+}
+
+////////////////////////////// mixins	/////////////////////////////////////////
+
+    /* Panels */
+$he-panel-bg: #FFFFFF;
+.he-Panel {
+	.__Head {
+		padding: $panel-padding/4 $panel-padding;
+    border-style: $panel-border-style;
+    border-width: $panel-border-size;
+    border-color: $panel-border-color;
+    background: $panel-bg;
+	}
+	/* cursor modifier */
+	&._pointer {
+		.__Head {
+			cursor: pointer;
+		}
+	}
+	&._movable {
+		.__Head {
+		cursor: move;
+		}
+	}
+	.__Body { @include panel($he-panel-bg, 1rem);
+	  &.callout {
+	    @include panel($callout-panel-bg);
+	    a:not(.button) {
+	      color: $callout-panel-link-color;
+
+	      &:hover,
+	      &:focus {
+	        color: $callout-panel-link-color-hover;
+	      }
+	    }
+	  }
+
+	  &.radius {
+	    @include radius;
+	  }
+
+	}
+}
+
+		/* Form */
+.he-Form {
+	$include-html-form-classes: true;
+	@import '../../../bower_components/foundation/scss/foundation/components/_forms.scss'; 
+}
+////////////////////////////// foundation lib ///////////////////////////////////
+
+
+.he-Grid__Rows:after {
+	clear: both;
+}
+
+.he-DesignViewPort {
+	padding: 20px;
+  background-color: whitesmoke;
+}
+
+.he-DesignCanvas {
+	border: solid 1px;
+  border-color: #ccc;
+  padding: 5px;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.he-DesignBlock {
+	border: solid 1px;
+  border-color: #ccc;
+}
+
+.he-Ruler__Horizontal {
+	position: fixed;
+  border-bottom: solid 1px;
+  text-align: center;
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+}
+.he-Ruler__Vertical {
+	position: absolute;
+  border-right: solid 1px;
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+  > span {
+		position: absolute;
+		top: 50%;
+		left: -10px;
+		margin-top: -50%;
+		transform: rotate(-90deg);  	
+  }
+}
+
+.he-BlockCoordinate {
+	position: fixed;
+	z-index: 9999;
+}
+
+.he-dropActive {
+	&:not(.he-parentOnly){
+		border: dashed;
+	}
+}
+
+
+////////////////////////// name convention ///////////////////////////////////
+/*
+	1. BEM convention
+	he-B__E_M where B, E, M follow CamelCase rule
+	Example:
+	<div class="he-BlockContent __Static _Red">
+		<div class="__Header">
+		</div>
+		<div class="__Body _Blue">
+		</div>
+	</div>
+	2. Utilities convention
+	he-camelCase where T follow camelCase rule
+	Example:
+	<div class="he-floatLeft he-hidden">
+	</div>
+*/
+////////////////////////// name convention ///////////////////////////////////
+
+.he-ConfigBlockList {
+	.he-DesignBlock {
+		position: static;
+	}
+	.__ContainerBlocks {
+		position: relative;
+	}
+	.__ContentBlocks {
+		position: relative;
+	}
+}
+
+.he-ConfigBlock {
+	margin-top: 2px;
+	.__Head {
+		padding: $panel-padding/4 $panel-padding;
+    background: $panel-bg;
+	}
+	.__Body {
+		display: none;
+		&._LoadContent {
+			display: block;
+			min-height: 10px;
+		}
+	}
+}
+
+.he-DesignBox_Center{
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	position: absolute;
+}
+
+.he-ContainerBlock__Absolute_Edit {
+}
+
+.he-ContainerBlock__Vertical_Edit {
+}
+
+.he-SortableBlock {
+	position: static;
+	&.__Placeholder {
+		display: none;
+	}
+	> .__Shadow {
+		> .he-DesignBlock {
+			position:relative;
+			top: auto !important;
+			left: auto !important;
+		}
+	}
+	> .__Content {
+		> .he-DesignBlock {
+			&:not(.he-dragging){
+				position:relative;
+				top: auto !important;
+				left: auto !important;				
+			}
+		}
+	}
+	&.he-hasDragItem {
+		> .__Content {
+			min-height: 30px;
+			margin: 4px;
+			background-color: wheat;
+			> * {
+				display: none !important;				
+			}
+		}
+	}
+}
+
+.he-ContentBlock{
+	> .__ContentReadOnly {
+		display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+	}
+	> .__ContentOverlay {
+		display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+	}
+}
+
+.he-dropActive {
+	.he-SortableBlock {
+		&.__Placeholder {
+			height: 20px;
+			display: block;
+		}
+	}
+}
+
+.he-dropTarget {
+	&:not(.he-parentOnly){
+		@include droppableTarget();
+	}
+}
+.he-dropParent {
+	@include droppableTarget();
+}
+
+.he-DesignBlock {
+	z-index: 10;
+	position: absolute;
+}
+
+.he-hidden {
+	display: none;
+}
+
+//must be last
+.he-dragging {
+	z-index: 100;
+	position: absolute !important;
+}

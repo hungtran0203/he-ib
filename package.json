@@ -1,0 +1,27 @@
+{
+  "name": "ux",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "envify": "^3.4.0",
+    "interact.js": "^1.2.4",
+    "jquery": "^2.1.4",
+    "jsx-loader": "^0.13.2",
+    "lodash": "^3.10.1",
+    "node-sass": "^3.3.2",
+    "react": "^0.13.3",
+    "react-webpack": "^0.4.1",
+    "sass-loader": "^2.0.1"
+  },
+  "devDependencies": {
+    "css-loader": "^0.16.0",
+    "style-loader": "^0.12.3",
+    "webpack": "^1.12.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
