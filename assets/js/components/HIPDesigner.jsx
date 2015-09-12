@@ -5,9 +5,63 @@ var Draggable = require('react-draggable');
 var jQuery = require('jquery')
 var HE = require('../lib/he.js');
 
-HE.UI.init();
+HE.init();
+
+HE.hook.add_filter('get_config_block_data', function(configBlockData){
+	//load absolute container
+	configBlockData.containerBlocks.push({type:'container.absolute', name:'container_absolute', title:'Absolute Container'})
+	//load vertical container
+	configBlockData.containerBlocks.push({type:'container.vertical', name:'container_vertical', title:'Vertical Container'})
+
+	//setup html block
+	configBlockData.contentBlocks.push({	type:'content', name:'html', title:'Html', contentAction: 'html',
+																				options: {
+																					'html': {
+																						componentName:'HE.UI.components.Form.TextArea',
+																						value:'',
+																						title:'Html',
+																						name:'option.html',
+																					}
+																				}
+																			}
+																		);
+	//add action to display html block content
+	HE.hook.add_action('fetchBlockContent__html', function(block){
+		var content = block.getLab().quite().get('options.html.value');
+		block.setContent(sanitizeHtmlContent(content));
+		return block;
+	})
+	function sanitizeHtmlContent(content){
+		if(content == ''){
+			//empty content, just give hint text
+			content = '<span class="_Hint"><a href="javascript:void(0)" onclick="HE.utils.focusInput(\'option.html\');">Edit Content</a></span>'
+		}
+		return content;
+	}
+	//add action on update html block attributes
+	HE.hook.add_action('updateBlockAttribute__html', function(block){
+		var content = block.getLab().quite().get('options.html.value');
+		block.setContent(sanitizeHtmlContent(content));
+		//force to update Lab content
+		block.getLab().refresh()
+		return block;
+	})
 
 
+	//load image content block
+	configBlockData.contentBlocks.push({	type:'content', name:'image', title:'Image', contentFilter: 'image',
+																				options: {
+																					'image': {
+																						componentName:'HE.UI.components.Form.TextArea',
+																						value:'',
+																						title:'Image URL',
+																						name:'image'
+																					}
+																				}
+																			}
+																		);
+	return configBlockData;
+})
 var App = React.createClass({
 		mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive],
 		getInitialState: function() {
@@ -28,24 +82,13 @@ var App = React.createClass({
 														});
 			}
 
-			window.configBlocks = HE.lab.init({containerBlocks: [{type:'container.absolute', name:'container_absolute', title:'Absolute Container'},
-																													{type:'container.vertical', name:'container_vertical', title:'Vertical Container'},
-																													// {type:'container.horizontal', name:'container_horizontal', title:'Horizontal Container'}
-																													],
-																				contentBlocks: [{	type:'content', 
-																													name:'static_html', 
-																													title:'Static Html',
-																													options: [
-																														{
-																															componentName:'HE.UI.components.Form.TextArea',
-																															value:'',
-																															title:'Html',
-																															name:'html'
-																														}
-																													]
-																												}
-																											]
-																			});
+			var configBlockData = {containerBlocks: [],
+															contentBlocks: []
+														};
+
+			configBlockData = HE.hook.apply_filters('get_config_block_data', configBlockData)
+			window.configBlocks = HE.lab.init(configBlockData);
+
 			window.HEState = HE.lab.init({});
 	  },
 		handleOnSave: function(event){

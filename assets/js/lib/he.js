@@ -1,6 +1,10 @@
 if(!window.HE) {
 	var HE = {};
 
+HE.init = function(){
+	HE.UI.init();
+	HE.hook.init();
+}
 //////////////////////////////////// UI ////////////////////////////////////////
 HE.UI = {
 	setMixins: function(name, mixin){
@@ -119,6 +123,14 @@ HE.utils = {
 			successCb(resp)
 		}, 100);
 	},
+	nextTick: function(fn){
+		setTimeout(fn, 10);
+	},
+	focusInput: function(name){
+		var input = jQuery("[name=\"" + name + "\"]");
+		console.log(input)
+		input.focus()
+	}
 }
 ////////////////////////////////// Utils ///////////////////////////////////////
 
@@ -127,6 +139,9 @@ HE.hook = {
 	defaultPriority: 10,
 	filters:[],
 	currentFilterStack: [],
+	init: function(){
+
+	},
 	resolve_queue: function($tag, $priority){
 		if(!$tag) return null;
 		$priority = $priority || HE.hook.defaultPriority;
@@ -226,6 +241,47 @@ HE.hook = {
 		} else {
 			return HE.hook.currentFilterStack[HE.hook.currentFilterStack.length - 1]
 		}
+	},
+	do_action: function($tag){
+		var $filters = HE.hook.resolve_filters($tag);
+		var $orderedFilters = [];
+		$filters.map(function(queue, key){
+			$orderedFilters.push(queue)
+		})
+		//push the current filter tag
+		HE.hook.currentFilterStack.push($tag);
+
+		for(var i = $orderedFilters.length - 1; i >= 0;i--){
+			for(var j = 0; j < $orderedFilters[i].length; j++){
+				var fn
+				if($orderedFilters[i][j].funcName !== undefined){
+					fn = HE.utils.getComponentFromStr($orderedFilters[i][j].funcName);
+				} else if($orderedFilters[i][j].func !== undefined){
+					fn = $orderedFilters[i][j].func;
+				}
+				if(typeof fn === 'function'){
+					var $fnArgs = Array.prototype.slice.call(arguments, 1)
+					fn.apply(undefined, $fnArgs);
+				}
+			}
+		}
+		//pop the current filter tag
+		HE.hook.currentFilterStack.pop();
+	},
+	add_action: function($tag, $function_to_add, $priority, $accepted_args){
+		return HE.hook.add_filter($tag, $function_to_add, $priority, $accepted_args)
+	},
+	remove_action: function($tag, $function_to_remove, $priority){
+		return He.hook.remove_filter($tag, $function_to_remove, $priority);
+	},
+	has_action: function($tag, $function_to_check){
+		return HE.hook.has_filter($tag, $function_to_check);
+	},
+	remove_all_actions: function($tag, $priority){
+		return HE.hook.remove_all_filters($tag, $priority);
+	},
+	current_action: function(){
+		return HE.hook.current_action();
 	}
 }	
 //////////////////////////////// Hook__Filter //////////////////////////////////	

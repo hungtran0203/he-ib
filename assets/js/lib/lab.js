@@ -47,6 +47,9 @@ function LAB(ns, data, binder, pagingCollection, states){
     this.dispatch(ns, 'set', [this, oldVal, val]);
     return this;
   }
+  this.refresh = function(){
+    this.set('', this.getVal())
+  }
   this.push = function(ns, val, pos){
     var target = this.get(ns, null);
     if(!Array.isArray(target)) {
@@ -243,7 +246,7 @@ var lab = {
         }
       }
       var ref = levels[levels.length - 1];
-      return data[ref]?data[ref]:defVal;
+      return (data[ref] !== undefined)?data[ref]:defVal;
     }
     return defVal;
   },

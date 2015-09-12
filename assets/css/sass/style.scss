@@ -213,11 +213,16 @@ $he-panel-bg: #FFFFFF;
 .he-ContentBlock{
 	> .__ContentReadOnly {
 		display: block;
-    position: absolute;
     width: 100%;
     height: 100%;
     top: 0px;
     left: 0px;
+    ._Hint {
+    	color: #ccc;
+    	padding: 5px;
+    	z-index: 1;
+    	position: absolute;
+    }
 	}
 	> .__ContentOverlay {
 		display: block;

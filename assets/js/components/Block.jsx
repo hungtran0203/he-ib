@@ -307,47 +307,28 @@ var blockContentMixins = {
     if(!window.he_blockContentLab){
       window.he_blockContentLab = HE.lab.init({}).quite();
     }
-
     var content = window.he_blockContentLab.get(this.getContentNS());
+    self = this;
     if(content === undefined){
       //show loading state
-      content = <div className="">Loading</div>
+      content = <div className=""></div>
+      //fetch the content
+      HE.utils.nextTick(function(){
+        self.fetchContent();
+      })
+    } else {
+      content = <div dangerouslySetInnerHTML={{'__html':content}}></div>
     }
     return content;
-  },
-  hasContent: function(){
-    return (window.he_blockContentLab.get(this.getContentNS()) !== undefined);
-  },
-  isExpiredContent: function(){
-    return false;
-  },
-  getContentNS: function(){
-    return this.getLab().getFullNS('content');
-  },
-  setContent: function(content){
-    window.he_blockContentLab.set(this.getContentNS(), content);
-    //display new content
-    this.setState({redraw:true});
   },
   fetchContent: function(){
     //only fetch new content from server if not exists or expired
     var self = this;
     if(!this.hasContent() || this.isExpiredContent()){
-      //prepare REST params
-      //call ajax to get data
-      HE.utils.ajax({}, successCb, failCb)
-
-    }
-    //process call back
-    function successCb(resp){
-      //check for  the content
-      if(resp.data){
-        self.setContent(resp.data)
+      var filterName = self.getLab().get('contentAction', null)
+      if(filterName){
+        HE.hook.do_action('fetchBlockContent__' + filterName, self);
       }
-    }
-    //process failed call back
-    function failCb(error){
-
     }
   }
 }
@@ -413,7 +394,7 @@ var configurableMixins = {
   defaultRender: function(){
     return <div className="he-DesignBlock he-ConfigBlock" style={this.getStyle()} ref="block">
             <div className="__Head" onClick={this.handleHeaderClick}>{this.getLab().get('title')}</div>
-            <div className="__Body" dangerouslySetInnerHTML={{__html: this.getContent()}}></div>
+            <div className="__Body">{this.getContent()}</div>
           </div>;
   }
 }
@@ -483,7 +464,7 @@ HEUI.Attributes = React.createClass({
       }
     })
   },
-  handleChangeAtrribute: function(event){
+  handleChangeStyles: function(event){
     var inputName = event.target.name
     var currentVal = this.getLab().get('style.' + inputName);
     var adj = 0;
@@ -501,25 +482,36 @@ HEUI.Attributes = React.createClass({
       this.getLab().set('style.' + inputName, HE.utils.changeCssAttr(currentVal , adj));
     }
   },
+  updateBlockAttribute: function(e){
+    //just delegate update action to plugin
+    var contentAction = this.getLab().get('contentAction');
+    var self = this;
+    if(contentAction){
+      HE.utils.nextTick(function(){
+        HE.hook.do_action('updateBlockAttribute__' + contentAction, self)
+      })
+    }
+  },
   render: function(){
     var attributes = this.getStyle();
     var self = this;
     var optionsLab = self.getLab().link('options');
     //prepare options
-    var options = optionsLab.getVal([]);
+    var options = optionsLab.getVal(undefined);
     var optionNodes = null;
-    if(options && options.length){
-        optionNodes = options.map(function(val, key) {
-          if(val.componentName !== undefined){
-            var componentName = HE.utils.getComponentFromStr(val.componentName);
-            var componentLab = optionsLab.link(key + '.value')
+    if(options && typeof options === 'object'){
+        var optionKeys = Object.keys(options)
+        optionNodes = optionKeys.map(function(val, key) {
+          if(options[val].componentName !== undefined){
+            var componentName = HE.utils.getComponentFromStr(options[val].componentName);
+            var componentLab = optionsLab.link(val + '.value')
             if(componentLab){
-              var props = jQuery.extend(true, {}, val);
+              var props = jQuery.extend(true, {}, options[val]);
               //unset value key
               if(props['value'] !== undefined){
                 delete props['value'];
               }
-              props = jQuery.extend(true, props, {key: key, "value": componentLab})
+              props = jQuery.extend(true, props, {key: key, "value": componentLab, onChangeCapture:self.updateBlockAttribute})
               return React.createElement(componentName, props)
             } else {
               return null;
@@ -556,7 +548,7 @@ HEUI.Attributes = React.createClass({
               <div>
               {jQuery.map(attributes, function(value, key){
                 if(self.getLab()){
-                  return <HE.UI.components.Form.Text onKeyDown={self.handleChangeAtrribute} key={key} name={key} title={key} value={self.getLab().link('style.' + key)}>
+                  return <HE.UI.components.Form.Text onKeyDown={self.handleChangeStyles} key={key} name={key} title={key} value={self.getLab().link('style.' + key)}>
                         </HE.UI.components.Form.Text>                
                 } else {
                   return null;
@@ -667,7 +659,7 @@ HEUI.Content.Edit = React.createClass({
     return _.merge(defaultStyle, style, labStyle);
   },
   getDefaultStyle: function(){
-    return {width:'30px', height: '30px', top: '0px', left: '0px', padding: '0px'};
+    return {width:'auto', height: 'auto', top: '0px', left: '0px', padding: '0px'};
   },
   dropHandler: function(event){
 
@@ -683,7 +675,8 @@ HEUI.Content.Edit = React.createClass({
     this.fetchContent();
 
     return <div className="he-DesignBlock he-ContentBlock" style={this.getStyle()} ref="block" tabIndex={this.getTabIndex()}>
-              <div className="__ContentReadOnly" dangerouslySetInnerHTML={{__html: this.getContent()}}>
+              <div className="__ContentReadOnly" >
+                {this.getContent()}
               </div>
               <div className="__ContentOverlay">
               </div>

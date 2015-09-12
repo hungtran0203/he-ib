@@ -19,7 +19,7 @@ HEForm.Text = React.createClass({
     return (
       <div className="form-group">
         {this.hasTitle()?<label>{this.getTitle()}</label>:''}
-        <input {...this.except(['className', 'value', 'title', 'data-lab'])} className={this.getClass('form-control')} type="text" valueLink={this.getValueLink()}/>
+        <input {...this.except(['className', 'value', 'title', 'data-lab'])} className={this.getClass('form-control')} type="text" valueLink={this.getValueLink()}  ref="input"/>
       </div>
     );
   }
@@ -33,7 +33,7 @@ HEForm.TextArea = React.createClass({
     return (
       <div className="form-group">
         {this.hasTitle()?<label>{this.getTitle()}</label>:''}
-        <textarea {...this.except(['className', 'value'])} className={this.getClass('form-control')} type="text" valueLink={this.getValueLink()}/>
+        <textarea {...this.except(['className', 'value'])} className={this.getClass('form-control')} type="text" valueLink={this.getValueLink()} ref="input"/>
       </div>
     );
   }
@@ -58,7 +58,7 @@ HEForm.Submit = React.createClass({
   mixins: [HE.UI.mixins.common],
   render: function(){
     return (
-      <button {...this.except('className')} type="submit" className={this.getClass("btn btn-default")} value={this.getTitle()}>{this.getTitle()}</button>
+      <button {...this.except('className')} type="submit" className={this.getClass("btn btn-default")} value={this.getTitle()}  ref="input">{this.getTitle()}</button>
     );
   }
 })
