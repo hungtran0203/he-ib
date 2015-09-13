@@ -70,16 +70,22 @@ var App = React.createClass({
 	  },
 	  loadIBLab: function(){
 			var storeDataStr = localStorage.getItem('box', null);
+			// var storeDataStr = null;
 			if(storeDataStr){
 				window.store = HE.lab.init(jQuery.parseJSON(storeDataStr));
 			} else {
-				window.store = HE.lab.init({box:{type:'box', 
-																	name:'my box', 
-																	title: 'my box', 
-																	style:{width:'300px', height:'300px'}, 
-																	blocks:[]
-																}
-														});
+				window.store = HE.lab.init({box: {
+																					type:'box', 
+																					name:'my box', 
+																					title: 'my box', 
+																					style:{width:'300px', height:'300px'}, 
+																					blocks:[]
+																				},
+																		boxes: [
+																			{title: 'FirstBox'},
+																			{title: 'SecondBox'}
+																		]
+																	});
 			}
 
 			var configBlockData = {containerBlocks: [],
@@ -102,14 +108,16 @@ var App = React.createClass({
 			this.forceUpdate();
 		},
     render: function () {
+    	var configList = <HE.UI.components.Block.ConfigList data-lab={window.configBlocks} ref="config"></HE.UI.components.Block.ConfigList>
+    	var boxList = <HE.UI.components.Block.BoxList data-lab={window.store.link('boxes')} ref="config"></HE.UI.components.Block.BoxList>
+    	var isConfigMode = false;
         return (
         	<div className="">
         		<HE.UI.components.Grid.Rows>
 	        		<div data-width="20">
 	        			<div>Title</div>
 	        			<div>Toolbar</div>
-	        			<HE.UI.components.Block.ConfigList data-lab={window.configBlocks} ref="config">
-	        			</HE.UI.components.Block.ConfigList>
+	        			{isConfigMode?configList:boxList}
 	        		</div>
 	        		<div data-width="50" >
 	        			<div>Title</div>

@@ -617,6 +617,49 @@ HEUI.ConfigList = React.createClass({
 })
 ///////////////////////////////////// Block.ConfigList //////////////////////////////
 
+///////////////////////////////////// Block.BoxList //////////////////////////////
+HEUI.BoxList = React.createClass({
+  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive],
+  getStyle: function(){
+  },
+  componentDidMount: function () {
+  },
+  getBox: function(lab){
+    return <HE.UI.components.Panel className="__Basic _pointer">
+            <div>{lab.get('title')}</div>
+            <div>
+              <button>Edit</button>
+              <button onClick={this.removeBox.bind(this, lab)}>Delete</button>
+            </div>
+          </HE.UI.components.Panel>
+
+  },
+  removeBox: function(lab){
+    lab.clear('');
+  },
+  addBox: function(event){
+    this.getLab().push('', {title:'New Box'})
+  },
+  render: function(){
+    var self = this;
+    var boxes = this.getLab().getVal([]);
+    var boxesList = boxes.map(function(val, key){
+      return <li>
+              {self.getBox(self.getLab().link(key))}
+            </li>
+    });
+    return <div className="he-BoxList" ref="block">
+            <ul className="__List">
+            {boxesList}
+            <li>
+              <button onClick={this.addBox}>New Box</button>
+            </li>
+            </ul>
+          </div>;
+  }
+})
+///////////////////////////////////// Block.BoxList //////////////////////////////
+
 HEUI.Content = {}
 
 ///////////////////////////////////// Block.Content.Config //////////////////////////////
