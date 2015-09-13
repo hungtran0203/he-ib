@@ -66,26 +66,23 @@ var App = React.createClass({
 		mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive],
 		getInitialState: function() {
 			this.loadIBLab();
+			//bind actions
+			var self = this;
+
+			HE.hook.add_action('setEditingBox', function(editingBox){
+				self.store.set('status.editingBox', editingBox);
+				//redraw
+				self.setState({redraw:true})
+			})
+
 			return {'redraw': true};
 	  },
 	  loadIBLab: function(){
-			var storeDataStr = localStorage.getItem('box', null);
-			// var storeDataStr = null;
+			var storeDataStr = localStorage.getItem('heStore', null);
 			if(storeDataStr){
 				window.store = HE.lab.init(jQuery.parseJSON(storeDataStr));
 			} else {
-				window.store = HE.lab.init({box: {
-																					type:'box', 
-																					name:'my box', 
-																					title: 'my box', 
-																					style:{width:'300px', height:'300px'}, 
-																					blocks:[]
-																				},
-																		boxes: [
-																			{title: 'FirstBox'},
-																			{title: 'SecondBox'}
-																		]
-																	});
+				window.store = HE.lab.init({boxes: []});
 			}
 
 			var configBlockData = {containerBlocks: [],
@@ -96,48 +93,95 @@ var App = React.createClass({
 			window.configBlocks = HE.lab.init(configBlockData);
 
 			window.HEState = HE.lab.init({});
+
+			//assign labs
+			this.store = window.store;
+			this.lab = window.store;
+			this.HEState = window.HEState;
+			this.configBlocks = window.configBlocks;
 	  },
-		handleOnSave: function(event){
-			localStorage.setItem('box', JSON.stringify(window.store.getVal()));
+		handleSaveButtonClick: function(event){
+			localStorage.setItem('heStore', JSON.stringify(this.store.getVal()));
 		},
-		handleOnClear: function(event){
-			localStorage.removeItem('box');
+		handleClearButtonClick: function(event){
+			localStorage.removeItem('heStore');
 			this.loadIBLab();
-			this.refs.config.setLab(window.configBlocks)
-			this.refs.edit.setLab(window.store.link('box'))
+			this.refs.config.setLab(this.configBlocks)
+			this.refs.edit.setLab(this.store.link('heStore'))
 			this.forceUpdate();
 		},
+		handleDoneButtonClick: function(event){
+			this.store.clear('status.editingBox');
+			this.forceUpdate();
+		},
+		getEditingBox: function(){
+			return this.store.get('status.editingBox', null);
+		},
+		getEditingBoxLab: function(){
+			var editingBox = this.getEditingBox();
+			return this.store.link('boxes.' + editingBox);
+		},
+		getLeftColumn:function(){
+    	if(this.getEditingBox() === null) {
+	    	return <HE.UI.components.Block.BoxList data-lab={this.store.link('boxes')} ref="config"></HE.UI.components.Block.BoxList>  
+    	} else {
+    		return  <HE.UI.components.Block.ConfigList data-lab={this.configBlocks} ref="config"></HE.UI.components.Block.ConfigList>
+    	}
+		},
+		getMiddleColumn: function(){
+    	if(this.getEditingBox() === null) {
+    		return (
+    			<div>
+		  			<div className="he-ib-design-toolbar">
+		  				<button onClick={this.handleSaveButtonClick}>Save</button>
+		  			</div>
+    				<div className="he-DesignViewPort"></div>
+    			</div>
+    			);
+    	} else {
+    		var editingBoxLab = this.getEditingBoxLab();
+    		return (
+    			<div>
+		  			<div className="he-ib-design-toolbar">
+		  				<button onClick={this.handleSaveButtonClick}>Save</button>
+		  				<button onClick={this.handleClearButtonClick}>Clear</button>
+		  				<button onClick={this.handleDoneButtonClick}>Done</button>
+		  			</div>
+      			<div>Box: {editingBoxLab.get('title')}</div>
+		  			<div className="he-DesignViewPort">
+		  				<div className="he-DesignCanvas">
+		  					<HE.UI.components.Block.Box.Edit data-lab={editingBoxLab} ref="edit">
+		  					</HE.UI.components.Block.Box.Edit>
+		  				</div>
+		  			</div>
+		  			<div>Footer</div>
+		  		</div>
+		  		);
+    	}
+		},
+		getRightColumn: function(){
+			return (<div>
+	        			<div>Toolbar</div>
+      					<HE.UI.components.Block.Attributes style={{padding:'5px 5px'}} data-lab={this.HEState.link('activeBlock')} ref="attributes">
+      					</HE.UI.components.Block.Attributes>
+      				</div>);
+		},
     render: function () {
-    	var configList = <HE.UI.components.Block.ConfigList data-lab={window.configBlocks} ref="config"></HE.UI.components.Block.ConfigList>
-    	var boxList = <HE.UI.components.Block.BoxList data-lab={window.store.link('boxes')} ref="config"></HE.UI.components.Block.BoxList>
-    	var isConfigMode = false;
         return (
         	<div className="">
         		<HE.UI.components.Grid.Rows>
 	        		<div data-width="20">
-	        			<div>Title</div>
+	        			<div>Left</div>
 	        			<div>Toolbar</div>
-	        			{isConfigMode?configList:boxList}
+	        			{this.getLeftColumn()}
 	        		</div>
 	        		<div data-width="50" >
-	        			<div>Title</div>
-	        			<div className="he-ib-design-toolbar">
-	        				<button onClick={this.handleOnSave}>Save</button>
-	        				<button onClick={this.handleOnClear}>Clear</button>
-	        			</div>
-	        			<div className="he-DesignViewPort">
-	        				<div className="he-DesignCanvas">
-	        					<HE.UI.components.Block.Box.Edit data-lab={window.store.link('box')} ref="edit">
-	        					</HE.UI.components.Block.Box.Edit>
-	        				</div>
-	        			</div>
-	        			<div>Footer</div>
+	        			<div>Middle</div>
+	        			{this.getMiddleColumn()}
 	        		</div>
 	        		<div data-width="30">
-	        			<div>Title</div>
-	        			<div>Toolbar</div>
-      					<HE.UI.components.Block.Attributes style={{padding:'5px 5px'}} data-lab={window.HEState.link('activeBlock')} ref="attributes">
-      					</HE.UI.components.Block.Attributes>
+	        			<div>Right</div>
+	        			{this.getRightColumn()}
 	        		</div>        			
         		</HE.UI.components.Grid.Rows>
           </div>

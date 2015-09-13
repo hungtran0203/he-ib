@@ -628,7 +628,7 @@ HEUI.BoxList = React.createClass({
     return <HE.UI.components.Panel className="__Basic _pointer">
             <div>{lab.get('title')}</div>
             <div>
-              <button>Edit</button>
+              <button onClick={this.editBox.bind(this, lab)}>Edit</button>
               <button onClick={this.removeBox.bind(this, lab)}>Delete</button>
             </div>
           </HE.UI.components.Panel>
@@ -638,13 +638,16 @@ HEUI.BoxList = React.createClass({
     lab.clear('');
   },
   addBox: function(event){
-    this.getLab().push('', {title:'New Box'})
+    this.getLab().push('', {title:'New Box', name:'box', type:'box', style:{width:'300px', height:'300px'}, blocks:[]})
+  },
+  editBox: function(lab){
+    HE.hook.do_action('setEditingBox', lab.getShortNS());
   },
   render: function(){
     var self = this;
     var boxes = this.getLab().getVal([]);
     var boxesList = boxes.map(function(val, key){
-      return <li>
+      return <li key={key}>
               {self.getBox(self.getLab().link(key))}
             </li>
     });
