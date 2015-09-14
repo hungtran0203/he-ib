@@ -25,10 +25,10 @@ HE.hook.add_filter('get_config_block_data', function(configBlockData){
 																			}
 																		);
 	//add action to display html block content
-	HE.hook.add_action('fetchBlockContent__html', function(block){
-		var content = block.getLab().quite().get('options.html.value');
-		block.setContent(sanitizeHtmlContent(content));
-		return block;
+	HE.hook.add_filter('fetchBlockContent__html', function(content, block){
+		content = block.getLab().quite().get('options.html.value');
+		content = sanitizeHtmlContent(content);
+		return content;
 	})
 	function sanitizeHtmlContent(content){
 		if(content == ''){
@@ -38,14 +38,9 @@ HE.hook.add_filter('get_config_block_data', function(configBlockData){
 		return content;
 	}
 	//add action on update html block attributes
-	HE.hook.add_action('updateBlockAttribute__html', function(block){
-		var content = block.getLab().quite().get('options.html.value');
-		block.setContent(sanitizeHtmlContent(content));
-		//force to update Lab content
-		block.getLab().refresh()
-		return block;
+	HE.hook.add_action('updateBlockAttribute__html', function(attrBlock){
+		attrBlock.getLab().clear('____cachedContentKey');	//clear key to force update content
 	})
-
 
 	//load image content block
 	configBlockData.contentBlocks.push({	type:'content', name:'image', title:'Image', contentFilter: 'image',

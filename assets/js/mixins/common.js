@@ -54,27 +54,12 @@ var commonMixins = {
         return this.tabIndex;
       },
 
-      //for content components
-      getContentNS: function(){
-        return this.getLab().getFullNS('content');
-      },
-      setContent: function(content){
-        //init blockContentLab if not exists
-        if(!window.he_blockContentLab){
-          window.he_blockContentLab = HE.lab.init({}).quite();
+      getTabIndex: function(){
+        if(this.tabIndex === undefined){
+          this.tabIndex = HE.utils.getTabIndex();
         }
-        window.he_blockContentLab.set(this.getContentNS(), content);
-      },
-      hasContent: function(){
-        //init blockContentLab if not exists
-        if(!window.he_blockContentLab){
-          window.he_blockContentLab = HE.lab.init({}).quite();
-        }
-        return (window.he_blockContentLab.get(this.getContentNS()) !== undefined);
-      },
-      isExpiredContent: function(){
-        return false;
-      },
+        return this.tabIndex;
+      }
   	}
 
 module.exports = commonMixins;

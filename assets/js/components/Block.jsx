@@ -208,12 +208,10 @@ var draggableMixins = {
                 }
       }
       var newBlock = jQuery.extend(true, {}, this.getBlockData(), style);
+
       this.getLab().clear();
       pos = container.getLab().push('blocks', newBlock, pos)      
       
-      //reset content on changing
-      window.he_blockContentLab.clear(container.getLab().getFullNS())
-
       //keep this droppedin block as active
       var activeBlock = container.getLab().getFullNS('blocks.' + pos);
       container.getLab().setState('activeBlock', activeBlock);
@@ -305,34 +303,52 @@ var dropableMixins = {
 
 var blockContentMixins = {
   getContent: function(){
-    //init blockContentLab if not exists
-    if(!window.he_blockContentLab){
-      window.he_blockContentLab = HE.lab.init({}).quite();
-    }
-    // var content
-    var content = window.he_blockContentLab.get(this.getContentNS());
+    var content = this.getCachedContent();
     self = this;
     if(content === undefined){
       //show loading state
       content = <div className=""></div>
-      //fetch the content
-      HE.utils.nextTick(function(){
-        self.fetchContent();
-      })
     } else {
       content = <div dangerouslySetInnerHTML={{'__html':content}}></div>
     }
     return content;
   },
-  fetchContent: function(){
-    //only fetch new content from server if not exists or expired
-    var self = this;
-    if(!this.hasContent() || this.isExpiredContent()){
-      var filterName = self.getLab().get('contentAction', null)
-      if(filterName){
-        HE.hook.do_action('fetchBlockContent__' + filterName, self);
-      }
+  getCachedContent: function(){
+    var key = this.getCachedContentKey();
+    var content = HE.cache.remember(key, this.getContentLifeTime(), this.fetchContent);
+    return content;
+  },
+  reloadContent: function(){
+    var key = this.getCachedContentKey();
+    HE.cache.forget(key);
+    this.forceUpdate();
+  },
+  getCachedContentKey: function(){
+    var key = this.getLab().quite().get('____cachedContentKey');
+    if(key === undefined || HE.cache.get(key, undefined) === undefined){
+      key = this.generateCachedContentKey();
+      this.getLab().quite().set('____cachedContentKey', key)
     }
+    return key;
+  },
+  generateCachedContentKey: function(){
+    return '____cachedContentKey.' + this.getTabIndex() + '.t' + Date.now();
+  },
+  getContentLifeTime: function(){
+    if(!this.contentLifeTime){
+      var defaultLifeTime = 30000; //30 seconds
+      this.contentLifeTime = HE.hook.apply_filters('getContentLifeTime', defaultLifeTime, this)
+    }
+    return this.contentLifeTime;
+  },
+  fetchContent: function(){
+    var key = this.getCachedContentKey();
+    var filterName = this.getLab().get('contentAction', null)
+    var content
+    if(filterName){
+      content = HE.hook.apply_filters('fetchBlockContent__' + filterName, content, this);
+    }
+    return content;
   }
 }
 

@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "b6ffc7f5a00da9905079"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "c448e44e886999125aa4"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -853,10 +853,10 @@
 																				}
 																			);
 		//add action to display html block content
-		HE.hook.add_action('fetchBlockContent__html', function(block){
-			var content = block.getLab().quite().get('options.html.value');
-			block.setContent(sanitizeHtmlContent(content));
-			return block;
+		HE.hook.add_filter('fetchBlockContent__html', function(content, block){
+			content = block.getLab().quite().get('options.html.value');
+			content = sanitizeHtmlContent(content);
+			return content;
 		})
 		function sanitizeHtmlContent(content){
 			if(content == ''){
@@ -866,14 +866,9 @@
 			return content;
 		}
 		//add action on update html block attributes
-		HE.hook.add_action('updateBlockAttribute__html', function(block){
-			var content = block.getLab().quite().get('options.html.value');
-			block.setContent(sanitizeHtmlContent(content));
-			//force to update Lab content
-			block.getLab().refresh()
-			return block;
+		HE.hook.add_action('updateBlockAttribute__html', function(attrBlock){
+			attrBlock.getLab().clear('____cachedContentKey');	//clear key to force update content
 		})
-
 
 		//load image content block
 		configBlockData.contentBlocks.push({	type:'content', name:'image', title:'Image', contentFilter: 'image',
@@ -22204,6 +22199,9 @@
 		HE.UI.init();
 		HE.hook.init();
 	}
+
+	HE.lab = __webpack_require__(197);
+
 	//////////////////////////////////// UI ////////////////////////////////////////
 	HE.UI = {
 		setMixins: function(name, mixin){
@@ -22241,7 +22239,6 @@
 	    	HE.UI.loadMixins();
 	    	//load components
 	    	HE.UI.loadComponents();
-	    	HE.lab = __webpack_require__(197);
 	    	HE.UI.inited = true;      		
 	  	}
 	  },
@@ -22327,11 +22324,45 @@
 		},
 		focusInput: function(name){
 			var input = jQuery("[name=\"" + name + "\"]");
-			console.log(input)
 			input.focus()
 		}
 	}
 	////////////////////////////////// Utils ///////////////////////////////////////
+
+	////////////////////////////////// Cache ///////////////////////////////////////
+	HE.cache = {
+		store: HE.lab.init({}),
+		remember: function(key, lifeTime, valFn){
+			var val = HE.cache.store.get(key, undefined);
+			if(val === undefined){
+				//data expired or not set, call valFn to update cache data
+				if(typeof valFn === 'function'){
+					val = valFn();
+				}
+				HE.cache.set(key, val, lifeTime);
+			}
+			return HE.cache.get(key);
+		},
+		rememberForever: function(key, valFn){
+			return HE.cache.remember(key, null, valFn);
+		},
+		get: function(key, def){
+			var expiredAt = HE.cache.store.get(key + '.____expiredAt', null);
+			if(expiredAt !== -1 && (expiredAt === null || parseInt(expiredAt) < Date.now())){
+				//data expired, call valFn to update cache data
+				return def;
+			}
+			return HE.cache.store.get(key + '.____value', def)
+		},
+		set: function(key, val, lifeTime){
+			var expiredAt = lifeTime?Date.now() + parseInt(lifeTime):-1;
+			HE.cache.store.set(key, {____expiredAt:expiredAt,____value:val})
+		},
+		forget: function(key){
+			HE.cache.store.clear(key);
+		}
+	}
+	////////////////////////////////// Cache ///////////////////////////////////////
 
 	//////////////////////////////// Hook__Filter //////////////////////////////////
 	HE.hook = {
@@ -22361,6 +22392,7 @@
 		apply_filters: function($tag, $value){
 			var $filters = HE.hook.resolve_filters($tag);
 			var $orderedFilters = [];
+			var $fnArgs = Array.prototype.slice.call(arguments, 1);
 			$filters.map(function(queue, key){
 				$orderedFilters.push(queue)
 			})
@@ -22376,7 +22408,8 @@
 						fn = $orderedFilters[i][j].func;
 					}
 					if(typeof fn === 'function'){
-						$value = fn($value);
+						$fnArgs[0] = $value;
+						$value = fn.apply(undefined, $fnArgs);
 					}
 				}
 			}
@@ -22447,6 +22480,7 @@
 			$filters.map(function(queue, key){
 				$orderedFilters.push(queue)
 			})
+			var $fnArgs = Array.prototype.slice.call(arguments, 1)
 			//push the current filter tag
 			HE.hook.currentFilterStack.push($tag);
 
@@ -22459,7 +22493,6 @@
 						fn = $orderedFilters[i][j].func;
 					}
 					if(typeof fn === 'function'){
-						var $fnArgs = Array.prototype.slice.call(arguments, 1)
 						fn.apply(undefined, $fnArgs);
 					}
 				}
@@ -22643,27 +22676,12 @@
 	        return this.tabIndex;
 	      },
 
-	      //for content components
-	      getContentNS: function(){
-	        return this.getLab().getFullNS('content');
-	      },
-	      setContent: function(content){
-	        //init blockContentLab if not exists
-	        if(!window.he_blockContentLab){
-	          window.he_blockContentLab = HE.lab.init({}).quite();
+	      getTabIndex: function(){
+	        if(this.tabIndex === undefined){
+	          this.tabIndex = HE.utils.getTabIndex();
 	        }
-	        window.he_blockContentLab.set(this.getContentNS(), content);
-	      },
-	      hasContent: function(){
-	        //init blockContentLab if not exists
-	        if(!window.he_blockContentLab){
-	          window.he_blockContentLab = HE.lab.init({}).quite();
-	        }
-	        return (window.he_blockContentLab.get(this.getContentNS()) !== undefined);
-	      },
-	      isExpiredContent: function(){
-	        return false;
-	      },
+	        return this.tabIndex;
+	      }
 	  	}
 
 	module.exports = commonMixins;
@@ -25268,12 +25286,10 @@
 	                }
 	      }
 	      var newBlock = jQuery.extend(true, {}, this.getBlockData(), style);
+
 	      this.getLab().clear();
 	      pos = container.getLab().push('blocks', newBlock, pos)      
 	      
-	      //reset content on changing
-	      window.he_blockContentLab.clear(container.getLab().getFullNS())
-
 	      //keep this droppedin block as active
 	      var activeBlock = container.getLab().getFullNS('blocks.' + pos);
 	      container.getLab().setState('activeBlock', activeBlock);
@@ -25365,34 +25381,52 @@
 
 	var blockContentMixins = {
 	  getContent: function(){
-	    //init blockContentLab if not exists
-	    if(!window.he_blockContentLab){
-	      window.he_blockContentLab = HE.lab.init({}).quite();
-	    }
-	    // var content
-	    var content = window.he_blockContentLab.get(this.getContentNS());
+	    var content = this.getCachedContent();
 	    self = this;
 	    if(content === undefined){
 	      //show loading state
 	      content = React.createElement("div", {className: ""})
-	      //fetch the content
-	      HE.utils.nextTick(function(){
-	        self.fetchContent();
-	      })
 	    } else {
 	      content = React.createElement("div", {dangerouslySetInnerHTML: {'__html':content}})
 	    }
 	    return content;
 	  },
-	  fetchContent: function(){
-	    //only fetch new content from server if not exists or expired
-	    var self = this;
-	    if(!this.hasContent() || this.isExpiredContent()){
-	      var filterName = self.getLab().get('contentAction', null)
-	      if(filterName){
-	        HE.hook.do_action('fetchBlockContent__' + filterName, self);
-	      }
+	  getCachedContent: function(){
+	    var key = this.getCachedContentKey();
+	    var content = HE.cache.remember(key, this.getContentLifeTime(), this.fetchContent);
+	    return content;
+	  },
+	  reloadContent: function(){
+	    var key = this.getCachedContentKey();
+	    HE.cache.forget(key);
+	    this.forceUpdate();
+	  },
+	  getCachedContentKey: function(){
+	    var key = this.getLab().quite().get('____cachedContentKey');
+	    if(key === undefined || HE.cache.get(key, undefined) === undefined){
+	      key = this.generateCachedContentKey();
+	      this.getLab().quite().set('____cachedContentKey', key)
 	    }
+	    return key;
+	  },
+	  generateCachedContentKey: function(){
+	    return '____cachedContentKey.' + this.getTabIndex() + '.t' + Date.now();
+	  },
+	  getContentLifeTime: function(){
+	    if(!this.contentLifeTime){
+	      var defaultLifeTime = 30000; //30 seconds
+	      this.contentLifeTime = HE.hook.apply_filters('getContentLifeTime', defaultLifeTime, this)
+	    }
+	    return this.contentLifeTime;
+	  },
+	  fetchContent: function(){
+	    var key = this.getCachedContentKey();
+	    var filterName = this.getLab().get('contentAction', null)
+	    var content
+	    if(filterName){
+	      content = HE.hook.apply_filters('fetchBlockContent__' + filterName, content, this);
+	    }
+	    return content;
 	  }
 	}
 
@@ -44721,6 +44755,11 @@
 	  this.link = function(ns){
 	    ns = lab.joinNs(this.ns, ns);
 	    var linkLab = new LAB(ns.join('.'), this.data, this.binder, this.pagingCollection, this.states);
+	    return linkLab;
+	  }
+	  this.parentLink = function(){
+	    ns = this.getParentNS();
+	    var linkLab = new LAB(ns, this.data, this.binder, this.pagingCollection, this.states);
 	    return linkLab;
 	  }
 	  this.getVal = function(){

@@ -5,6 +5,9 @@ HE.init = function(){
 	HE.UI.init();
 	HE.hook.init();
 }
+
+HE.lab = require('./lab.js');
+
 //////////////////////////////////// UI ////////////////////////////////////////
 HE.UI = {
 	setMixins: function(name, mixin){
@@ -42,7 +45,6 @@ HE.UI = {
     	HE.UI.loadMixins();
     	//load components
     	HE.UI.loadComponents();
-    	HE.lab = require('./lab.js');
     	HE.UI.inited = true;      		
   	}
   },
@@ -128,11 +130,45 @@ HE.utils = {
 	},
 	focusInput: function(name){
 		var input = jQuery("[name=\"" + name + "\"]");
-		console.log(input)
 		input.focus()
 	}
 }
 ////////////////////////////////// Utils ///////////////////////////////////////
+
+////////////////////////////////// Cache ///////////////////////////////////////
+HE.cache = {
+	store: HE.lab.init({}),
+	remember: function(key, lifeTime, valFn){
+		var val = HE.cache.store.get(key, undefined);
+		if(val === undefined){
+			//data expired or not set, call valFn to update cache data
+			if(typeof valFn === 'function'){
+				val = valFn();
+			}
+			HE.cache.set(key, val, lifeTime);
+		}
+		return HE.cache.get(key);
+	},
+	rememberForever: function(key, valFn){
+		return HE.cache.remember(key, null, valFn);
+	},
+	get: function(key, def){
+		var expiredAt = HE.cache.store.get(key + '.____expiredAt', null);
+		if(expiredAt !== -1 && (expiredAt === null || parseInt(expiredAt) < Date.now())){
+			//data expired, call valFn to update cache data
+			return def;
+		}
+		return HE.cache.store.get(key + '.____value', def)
+	},
+	set: function(key, val, lifeTime){
+		var expiredAt = lifeTime?Date.now() + parseInt(lifeTime):-1;
+		HE.cache.store.set(key, {____expiredAt:expiredAt,____value:val})
+	},
+	forget: function(key){
+		HE.cache.store.clear(key);
+	}
+}
+////////////////////////////////// Cache ///////////////////////////////////////
 
 //////////////////////////////// Hook__Filter //////////////////////////////////
 HE.hook = {
@@ -162,6 +198,7 @@ HE.hook = {
 	apply_filters: function($tag, $value){
 		var $filters = HE.hook.resolve_filters($tag);
 		var $orderedFilters = [];
+		var $fnArgs = Array.prototype.slice.call(arguments, 1);
 		$filters.map(function(queue, key){
 			$orderedFilters.push(queue)
 		})
@@ -177,7 +214,8 @@ HE.hook = {
 					fn = $orderedFilters[i][j].func;
 				}
 				if(typeof fn === 'function'){
-					$value = fn($value);
+					$fnArgs[0] = $value;
+					$value = fn.apply(undefined, $fnArgs);
 				}
 			}
 		}
@@ -248,6 +286,7 @@ HE.hook = {
 		$filters.map(function(queue, key){
 			$orderedFilters.push(queue)
 		})
+		var $fnArgs = Array.prototype.slice.call(arguments, 1)
 		//push the current filter tag
 		HE.hook.currentFilterStack.push($tag);
 
@@ -260,7 +299,6 @@ HE.hook = {
 					fn = $orderedFilters[i][j].func;
 				}
 				if(typeof fn === 'function'){
-					var $fnArgs = Array.prototype.slice.call(arguments, 1)
 					fn.apply(undefined, $fnArgs);
 				}
 			}

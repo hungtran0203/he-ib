@@ -85,6 +85,11 @@ function LAB(ns, data, binder, pagingCollection, states){
     var linkLab = new LAB(ns.join('.'), this.data, this.binder, this.pagingCollection, this.states);
     return linkLab;
   }
+  this.parentLink = function(){
+    ns = this.getParentNS();
+    var linkLab = new LAB(ns, this.data, this.binder, this.pagingCollection, this.states);
+    return linkLab;
+  }
   this.getVal = function(){
     if(this.ns === '' || this.ns === null) {
       this.dispatch(this.ns, 'get', [this]);
