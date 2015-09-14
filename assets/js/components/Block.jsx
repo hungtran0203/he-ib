@@ -3,7 +3,6 @@
 var React = require('react');
 var HEUI = {};
 var interact = require('interact.js')
-var jQuery = require('jquery')
 var _ = require('lodash');
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -211,6 +210,9 @@ var draggableMixins = {
       var newBlock = jQuery.extend(true, {}, this.getBlockData(), style);
       this.getLab().clear();
       pos = container.getLab().push('blocks', newBlock, pos)      
+      
+      //reset content on changing
+      window.he_blockContentLab.clear(container.getLab().getFullNS())
 
       //keep this droppedin block as active
       var activeBlock = container.getLab().getFullNS('blocks.' + pos);
@@ -307,6 +309,7 @@ var blockContentMixins = {
     if(!window.he_blockContentLab){
       window.he_blockContentLab = HE.lab.init({}).quite();
     }
+    // var content
     var content = window.he_blockContentLab.get(this.getContentNS());
     self = this;
     if(content === undefined){

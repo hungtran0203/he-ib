@@ -2,7 +2,6 @@ var React = require('react');
 
 var Draggable = require('react-draggable');
 
-var jQuery = require('jquery')
 var HE = require('../lib/he.js');
 
 HE.init();
