@@ -1010,8 +1010,9 @@ HEUI.Container.Vertical.Config = React.createClass({
 })
 ///////////////////////////////////// Block.Container.Vertical.Config //////////////////////////////
 
-
-HEUI.Container.Sortable = React.createClass({
+HEUI.Container.Sortable = {};
+///////////////////////////////////// Block.Container.Sortable.Edit //////////////////////////////
+HEUI.Container.Sortable.Edit = React.createClass({
   mixins: [HE.UI.mixins.common],
   getInitialState: function() {
     return {'dropTarget': false};
@@ -1166,6 +1167,27 @@ HEUI.Container.Sortable = React.createClass({
           </div>;
   }  
 })
+///////////////////////////////////// Block.Container.Sortable.Edit //////////////////////////////
+///////////////////////////////////// Block.Container.Sortable.View //////////////////////////////
+HEUI.Container.Sortable.View = React.createClass({
+  mixins: [HE.UI.mixins.common],
+  render: function(){
+    var self = this; 
+    var childBlock = React.Children.map(this.props.children,
+                      function(child, key) {
+                        return React.addons.cloneWithProps(child, {ref: 'sortableContent'});
+                      }
+                    );
+    return <div className={this.getClass('he-SortableBlock')} ref="block">
+              <div className="__Content" ref="content" key="content">
+              {
+                childBlock
+              }
+              </div>
+          </div>;
+  }  
+})
+///////////////////////////////////// Block.Container.Sortable.View //////////////////////////////
 
 ///////////////////////////////////// Block.Container.Vertical.Edit //////////////////////////////
 HEUI.Container.Vertical.Edit = React.createClass({
@@ -1201,7 +1223,7 @@ HEUI.Container.Vertical.Edit = React.createClass({
                 if(val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'Edit');
                   var childLab = self.getLab().link('blocks.' + key)
-                  return React.createElement(HEUI.Container.Sortable, {key: key, "data-container": self},
+                  return React.createElement(HEUI.Container.Sortable.Edit, {key: key, "data-container": self},
                           React.createElement(componentName, {"data-lab": childLab})
                         )
                 } else {
@@ -1210,7 +1232,7 @@ HEUI.Container.Vertical.Edit = React.createClass({
               })
               :null
             }
-            <HEUI.Container.Sortable className="__Placeholder" key="a" data-container={self}></HEUI.Container.Sortable>
+            <HEUI.Container.Sortable.Edit className="__Placeholder" key="a" data-container={self}></HEUI.Container.Sortable.Edit>
           </div>;
   }
 })
@@ -1250,7 +1272,7 @@ HEUI.Container.Vertical.View = React.createClass({
                 if(val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'View');
                   var childLab = self.getLab().link('blocks.' + key)
-                  return React.createElement(HEUI.Container.Sortable, {key: key, "data-container": self},
+                  return React.createElement(HEUI.Container.Sortable.View, {key: key, "data-container": self},
                           React.createElement(componentName, {"data-lab": childLab})
                         )
                 } else {
