@@ -22,8 +22,8 @@ function LAB(ns, data, binder, pagingCollection, states){
   }
   this.setState = function(key, val){
       this.states[key] = val;
-      //refresh dta on save
-      this.setVal(this.getVal());
+      //refresh data on change state
+      this.refresh();
       return this;
   }
   this.getState = function(key, def){

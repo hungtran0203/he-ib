@@ -582,13 +582,13 @@ HEUI.ConfigList = React.createClass({
     var contentBlocksLab = this.getLab().link('contentBlocks',[])
 
     return <div className="he-ConfigBlockList" ref="block">
-            <ul className="__ContainerBlocks">
+            <div className="__ContainerBlocks">
             {
               containerBlocksLab.getVal()?
               containerBlocksLab.getVal().map(function(val, key){
                 if(val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'Config');
-                  return React.createElement("li", {"key": key},
+                  return React.createElement("div", {"key": key},
                           React.createElement(componentName, {"data-lab": containerBlocksLab.link(key)})
                         )
                 } else {
@@ -596,14 +596,14 @@ HEUI.ConfigList = React.createClass({
                 }
               }):null
             }
-            </ul>
-            <ul className="__ContentBlocks">
+            </div>
+            <div className="__ContentBlocks">
             {
               contentBlocksLab.getVal()?
               contentBlocksLab.getVal().map(function(val, key){
                 if(val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'Config');
-                  return React.createElement("li", {"key": key},
+                  return React.createElement("div", {"key": key},
                           React.createElement(componentName, {"data-lab": contentBlocksLab.link(key)})
                         )
                 } else {
@@ -611,7 +611,7 @@ HEUI.ConfigList = React.createClass({
                 }
               }):null
             }
-            </ul>
+            </div>
           </div>;
   }
 })
@@ -620,19 +620,31 @@ HEUI.ConfigList = React.createClass({
 ///////////////////////////////////// Block.BoxList //////////////////////////////
 HEUI.BoxList = React.createClass({
   mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive],
+  getInitialState: function(){
+    return {selectedBox:0};
+  },
   getStyle: function(){
   },
-  componentDidMount: function () {
-  },
   getBox: function(lab){
-    return <HE.UI.components.Panel className="__Basic _pointer">
-            <div>{lab.get('title')}</div>
+    var isCollapsed = (this.state.selectedBox == lab.getShortNS())?0:1
+    return <HE.UI.components.Panel className="__Basic _pointer" data-collapsed={isCollapsed}>
+            <div onClick={this.toggleBox.bind(this, lab)}>{lab.get('title')}</div>
             <div>
               <button onClick={this.editBox.bind(this, lab)}>Edit</button>
               <button onClick={this.removeBox.bind(this, lab)}>Delete</button>
             </div>
           </HE.UI.components.Panel>
 
+  },
+  toggleBox: function(lab){
+    var selectedBox
+    if(this.state.selectedBox == lab.getShortNS()){
+      selectedBox = null;
+    } else {
+      selectedBox = lab.getShortNS();
+      HE.HEState.setState('selectedBox', selectedBox)
+    }
+    this.setState({selectedBox:selectedBox})
   },
   removeBox: function(lab){
     lab.clear('');
@@ -641,23 +653,23 @@ HEUI.BoxList = React.createClass({
     this.getLab().push('', {title:'New Box', name:'box', type:'box', style:{width:'300px', height:'300px'}, blocks:[]})
   },
   editBox: function(lab){
-    HE.hook.do_action('setEditingBox', lab.getShortNS());
+    HE.HEState.setState('editingBox', lab.getShortNS())
   },
   render: function(){
     var self = this;
     var boxes = this.getLab().getVal([]);
     var boxesList = boxes.map(function(val, key){
-      return <li key={key}>
+      return <div key={key}>
               {self.getBox(self.getLab().link(key))}
-            </li>
+            </div>
     });
     return <div className="he-BoxList" ref="block">
-            <ul className="__List">
+            <div className="__List">
             {boxesList}
-            <li>
+            <div>
               <button onClick={this.addBox}>New Box</button>
-            </li>
-            </ul>
+            </div>
+            </div>
           </div>;
   }
 })
@@ -714,13 +726,17 @@ HEUI.Content.Edit = React.createClass({
     var thisElement = React.findDOMNode(this.refs.block);
     var self = this;
   },
+  handleDoubleClick: function(event){
+    this.getLab().set('style.height', 'auto')
+                  .set('style.width', 'auto');
+  },
 
   render: function(){
     var self = this;
     //fetch content data if not exist
     this.fetchContent();
 
-    return <div className="he-DesignBlock he-ContentBlock" style={this.getStyle()} ref="block" tabIndex={this.getTabIndex()}>
+    return <div className="he-DesignBlock he-ContentBlock" style={this.getStyle()} onDoubleClick={this.handleDoubleClick} ref="block" tabIndex={this.getTabIndex()}>
               <div className="__ContentReadOnly" >
                 {this.getContent()}
               </div>
@@ -735,6 +751,30 @@ HEUI.Content.Edit = React.createClass({
 ///////////////////////////////////// Block.Content.Attributes ////////////////////////
 
 ///////////////////////////////////// Block.Content.View //////////////////////////////
+HEUI.Content.View = React.createClass({
+  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive, 
+          blockContentMixins],
+  getStyle: function(){
+    var defaultStyle = this.getDefaultStyle();
+    var style = this.props.style;
+    var labStyle = this.getLab().get('style', {})
+    //merge style
+    return _.merge(defaultStyle, style, labStyle);
+  },
+  getDefaultStyle: function(){
+    return {width:'auto', height: 'auto', top: '0px', left: '0px', padding: '0px'};
+  },
+
+  render: function(){
+    var self = this;
+    //fetch content data if not exist
+    this.fetchContent();
+
+    return <div className="he-ViewBlock he-ContentBlock" style={this.getStyle()} ref="block">
+              {this.getContent()}
+          </div>;
+  }
+})
 ///////////////////////////////////// Block.Content.View //////////////////////////////
 
 
@@ -763,7 +803,7 @@ HEUI.Box.Edit = React.createClass({
   render: function(){
     var childBlocks = this.getLab().get('blocks', []);
     var self = this;
-    return <div className="he-DesignBlock he-DesignBox_Center" style={this.getStyle()} ref="block">
+    return <div className="he-DesignBlock he-Box __Design _Center" style={this.getStyle()} ref="block">
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {
@@ -786,6 +826,41 @@ HEUI.Box.Edit = React.createClass({
 ///////////////////////////////////// Block.Box.Attributes ////////////////////////
 
 ///////////////////////////////////// Block.Box.View //////////////////////////////
+HEUI.Box.View = React.createClass({
+  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive
+          ],
+  getStyle: function(){
+    var defaultStyle = this.getDefaultStyle();
+    var style = this.props.style;
+    var labStyle = this.getLab().get('style', {})
+    //merge style
+    style = _.merge(defaultStyle, style, labStyle);
+
+    return style;
+  },
+  getDefaultStyle: function(){
+    return {width:'100px', height: '100px', padding: '0px'};
+  },
+  render: function(){
+    var childBlocks = this.getLab().get('blocks', []);
+    var self = this;
+    return <div className="he-ViewBlock he-Box __View _Center" style={this.getStyle()} ref="block">
+            {
+              childBlocks.length?
+              childBlocks.map(function(val, key) {
+                if(val.type !== undefined){
+                  var componentName = HE.utils.getComponentByBlockType(val.type, 'View');
+                  var childLab = self.getLab().link('blocks.' + key)
+                  return React.createElement(componentName, {key: key, "data-lab": childLab})
+                } else {
+                  return null;
+                }
+              })
+              :null
+            }
+          </div>;
+  }
+})
 ///////////////////////////////////// Block.Box.View //////////////////////////////
 
 ///////////////////////////////////// Container layout ////////////////////////////
@@ -865,6 +940,47 @@ HEUI.Container.Absolute.Edit = React.createClass({
 ///////////////////////////////////// Block.Container.Absolute.Attributes ////////////////////////
 
 ///////////////////////////////////// Block.Container.Absolute.View //////////////////////////////
+HEUI.Container.Absolute.View = React.createClass({
+  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive
+            ],
+  getStyle: function(){
+    var defaultStyle = this.getDefaultStyle();
+    var style = this.props.style;
+    var labStyle = this.getLab().get('style', {})
+    //merge style
+    return _.merge(defaultStyle, style, labStyle);
+  },
+  getDefaultStyle: function(){
+    return {width:'60px', height: '60px', top: '0px', left: '0px', padding: '0px'};
+  },
+  dropHandler: function(event){
+
+  },
+  componentDidMount: function () {
+    var thisElement = React.findDOMNode(this.refs.block);
+    var self = this;
+
+  },
+  render: function(){
+    var childBlocks = this.getLab().get('blocks', []);
+    var self = this;
+    return <div className="he-ViewBlock he-ContainerBlock__Absolute_View" style={this.getStyle()} ref="block">
+            {
+              childBlocks.length?
+              childBlocks.map(function(val, key) {
+                if(val.type !== undefined){
+                  var componentName = HE.utils.getComponentByBlockType(val.type, 'View');
+                  var childLab = self.getLab().link('blocks.' + key)
+                  return React.createElement(componentName, {key: key, "data-lab": childLab})
+                } else {
+                  return null;
+                }
+              })
+              :null
+            }
+          </div>;
+  }
+})
 ///////////////////////////////////// Block.Container.Absolute.View //////////////////////////////
 
 HEUI.Container.Vertical = {}
@@ -1104,6 +1220,48 @@ HEUI.Container.Vertical.Edit = React.createClass({
 ///////////////////////////////////// Block.Container.Vertical.Attributes ////////////////////////
 
 ///////////////////////////////////// Block.Container.Vertical.View //////////////////////////////
+HEUI.Container.Vertical.View = React.createClass({
+  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive
+            ],
+  getStyle: function(){
+    var defaultStyle = this.getDefaultStyle();
+    var style = this.props.style;
+    var labStyle = this.getLab().get('style', {})
+    //merge style
+    return _.merge(defaultStyle, style, labStyle);
+  },
+  getDefaultStyle: function(){
+    return {width:'60px', height: '60px', top: '0px', left: '0px', padding: '0px'};
+  },
+  dropHandler: function(event){
+
+  },
+  componentDidMount: function () {
+    var thisElement = React.findDOMNode(this.refs.block);
+    var self = this;
+  },
+  render: function(){
+    var childBlocks = this.getLab().get('blocks', []);
+    var self = this;
+    return <div className="he-ViewBlock he-ContainerBlock__Vertical_View" style={this.getStyle()} ref="block">
+            {
+              childBlocks.length?
+              childBlocks.map(function(val, key) {
+                if(val.type !== undefined){
+                  var componentName = HE.utils.getComponentByBlockType(val.type, 'View');
+                  var childLab = self.getLab().link('blocks.' + key)
+                  return React.createElement(HEUI.Container.Sortable, {key: key, "data-container": self},
+                          React.createElement(componentName, {"data-lab": childLab})
+                        )
+                } else {
+                  return null;
+                }
+              })
+              :null
+            }
+          </div>;
+  }
+})
 ///////////////////////////////////// Block.Container.Vertical.View //////////////////////////////
 
 HEUI.Container.Horizontal = {}

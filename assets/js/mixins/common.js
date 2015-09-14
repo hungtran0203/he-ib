@@ -1,5 +1,12 @@
 var React = require('react/addons');
 var commonMixins = {
+      //bind change on a HEState
+      bindHEState: function(stateName){
+        var self = this;
+        HE.hook.add_action('changedHEState__' + stateName, function(){
+          self.forceUpdate();
+        })
+      },
   		getClass: function(className){
 			  var classes = {};
 			  classes[className] = true;
@@ -46,7 +53,7 @@ var commonMixins = {
         }
         return this.tabIndex;
       },
-      
+
       //for content components
       getContentNS: function(){
         return this.getLab().getFullNS('content');

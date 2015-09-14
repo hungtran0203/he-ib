@@ -75,7 +75,17 @@ var App = React.createClass({
 				self.setState({redraw:true})
 			})
 
+			//on HEState change bindings
+			self.bindHEState('editingBox');
+			self.bindHEState('selectedBox');
+
+
 			return {'redraw': true};
+	  },
+	  componentDidMount: function(){
+	  	if(this.getLab().get('boxes',[]).length){
+		  	HE.HEState.setState('selectedBox', 0)
+	  	}
 	  },
 	  loadIBLab: function(){
 			var storeDataStr = localStorage.getItem('heStore', null);
@@ -111,15 +121,16 @@ var App = React.createClass({
 			this.forceUpdate();
 		},
 		handleDoneButtonClick: function(event){
-			this.store.clear('status.editingBox');
-			this.forceUpdate();
+			HE.HEState.clearState('editingBox');
 		},
 		getEditingBox: function(){
-			return this.store.get('status.editingBox', null);
+			return HE.HEState.getState('editingBox', null);
 		},
-		getEditingBoxLab: function(){
-			var editingBox = this.getEditingBox();
-			return this.store.link('boxes.' + editingBox);
+		getSelectedBox: function(){
+			return HE.HEState.getState('selectedBox', null);
+		},
+		getBoxLab: function(index){
+			return this.store.link('boxes.' + index);
 		},
 		getLeftColumn:function(){
     	if(this.getEditingBox() === null) {
@@ -130,16 +141,28 @@ var App = React.createClass({
 		},
 		getMiddleColumn: function(){
     	if(this.getEditingBox() === null) {
+    		var selectedBox = this.getSelectedBox();
+    		var boxView
+    		if(selectedBox === null){
+    			boxView = null;
+    		} else {
+	    		var selectedBoxLab = this.getBoxLab(selectedBox);
+    			boxView = <HE.UI.components.Block.Box.View data-lab={selectedBoxLab} ref="view"></HE.UI.components.Block.Box.View>
+    		}
     		return (
     			<div>
 		  			<div className="he-ib-design-toolbar">
 		  				<button onClick={this.handleSaveButtonClick}>Save</button>
 		  			</div>
-    				<div className="he-DesignViewPort"></div>
+    				<div className="he-DesignViewPort">
+		  				<div className="he-DesignCanvas">
+		  					{boxView}
+		  				</div>
+    				</div>
     			</div>
     			);
     	} else {
-    		var editingBoxLab = this.getEditingBoxLab();
+    		var editingBoxLab = this.getBoxLab(this.getEditingBox());
     		return (
     			<div>
 		  			<div className="he-ib-design-toolbar">
@@ -160,26 +183,32 @@ var App = React.createClass({
     	}
 		},
 		getRightColumn: function(){
+			var attrLab;
+			if(this.getEditingBox() === null){
+				attrLab = this.getBoxLab(this.getSelectedBox());
+			} else {
+				attrLab = this.HEState.link('activeBlock');
+			}
 			return (<div>
-	        			<div>Toolbar</div>
-      					<HE.UI.components.Block.Attributes style={{padding:'5px 5px'}} data-lab={this.HEState.link('activeBlock')} ref="attributes">
-      					</HE.UI.components.Block.Attributes>
-      				</div>);
+		       			<div>Toolbar</div>
+	      					<HE.UI.components.Block.Attributes style={{padding:'5px 5px'}} data-lab={attrLab} ref="attributes">
+	      					</HE.UI.components.Block.Attributes>
+	     				</div>);
 		},
     render: function () {
         return (
         	<div className="">
         		<HE.UI.components.Grid.Rows>
-	        		<div data-width="20">
+	        		<div data-width="20" className="he-Column">
 	        			<div>Left</div>
 	        			<div>Toolbar</div>
 	        			{this.getLeftColumn()}
 	        		</div>
-	        		<div data-width="50" >
+	        		<div data-width="50" className="he-Column">
 	        			<div>Middle</div>
 	        			{this.getMiddleColumn()}
 	        		</div>
-	        		<div data-width="30">
+	        		<div data-width="30" className="he-Column">
 	        			<div>Right</div>
 	        			{this.getRightColumn()}
 	        		</div>        			

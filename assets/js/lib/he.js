@@ -285,6 +285,28 @@ HE.hook = {
 	}
 }	
 //////////////////////////////// Hook__Filter //////////////////////////////////	
+
+//////////////////////////////// HEState //////////////////////////////////
+HE.HEState = {
+	states: {},
+	setState: function(stateName, val){
+		HE.HEState.states[stateName] = HE.hook.apply_filters('setHEState__' + stateName, val);
+		HE.hook.do_action('changedHEState__' + stateName, val);
+	},
+	getState: function(stateName, def){
+		var val = HE.HEState.states[stateName];
+		val = (val === undefined)?def: val;
+		return HE.hook.apply_filters('getHEState__' + stateName, val);
+	},
+	clearState: function(stateName){
+		var val = HE.HEState.states[stateName];
+		delete HE.HEState.states[stateName];
+		HE.hook.do_action('changedHEState__' + stateName, val);
+	}
+}
+
+//////////////////////////////// HEState //////////////////////////////////
+
 	window.HE = HE;
 } else {
 	var HE = window.HE;

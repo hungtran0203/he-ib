@@ -12,6 +12,13 @@ HEUI = React.createClass({
 			});
 		}
 	},
+	getBodyClass: function(){
+		var bodyClass = "__Body";
+		if(this.props['data-collapsed']){
+			bodyClass += ' he-hidden';
+		}
+		return bodyClass;
+	},
   render: function(){
   	var headNode, bodyNode;
   	if(this.props.children.length > 1){
@@ -29,7 +36,7 @@ HEUI = React.createClass({
 	              :null
             	}
             	{
-              <div className="__Body" ref="body">
+              <div className={this.getBodyClass()} ref="body">
               	{bodyNode}
               </div>
             	}
