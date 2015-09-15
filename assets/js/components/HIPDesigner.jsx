@@ -11,6 +11,8 @@ HE.hook.add_filter('get_config_block_data', function(configBlockData){
 	configBlockData.containerBlocks.push({type:'container.absolute', name:'container_absolute', title:'Absolute Container'})
 	//load vertical container
 	configBlockData.containerBlocks.push({type:'container.vertical', name:'container_vertical', title:'Vertical Container'})
+	//load horizontal container
+	configBlockData.containerBlocks.push({type:'container.horizontal', name:'container_horizontal', title:'Horizontal Container'})
 
 	//setup html block
 	configBlockData.contentBlocks.push({	type:'content', name:'html', title:'Html', contentAction: 'html',

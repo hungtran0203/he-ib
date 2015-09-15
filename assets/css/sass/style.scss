@@ -198,10 +198,28 @@ $he-panel-bg: #FFFFFF;
 	}
 }
 
-.he-ContainerBlock__Absolute_Edit {
+.he-ContainerBlock__Absolute {
+	._Edit {
+	}
 }
 
-.he-ContainerBlock__Vertical_Edit {
+.he-ContainerBlock__Vertical {
+	._Edit {
+	}
+}
+
+.he-ContainerBlock__Horizontal {
+	._Edit {
+	}
+	.he-SortableBlock {
+		float:left;
+		&.he-hasDragItem {
+			> .__Content {
+				float:left;
+				min-width: 40px;
+			}
+		}
+	}
 }
 
 .he-SortableBlock {

@@ -936,7 +936,7 @@ HEUI.Container.Absolute.Edit = React.createClass({
   render: function(){
     var childBlocks = this.getLab().get('blocks', []);
     var self = this;
-    return <div className="he-DesignBlock he-ContainerBlock__Absolute_Edit" style={this.getStyle()} ref="block" tabIndex={this.getTabIndex()}>
+    return <div className="he-DesignBlock he-ContainerBlock__Absolute _Edit" style={this.getStyle()} ref="block" tabIndex={this.getTabIndex()}>
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {
@@ -983,7 +983,7 @@ HEUI.Container.Absolute.View = React.createClass({
   render: function(){
     var childBlocks = this.getLab().get('blocks', []);
     var self = this;
-    return <div className="he-ViewBlock he-ContainerBlock__Absolute_View" style={this.getStyle()} ref="block">
+    return <div className="he-ViewBlock he-ContainerBlock__Absolute _View" style={this.getStyle()} ref="block">
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {
@@ -1001,33 +1001,6 @@ HEUI.Container.Absolute.View = React.createClass({
   }
 })
 ///////////////////////////////////// Block.Container.Absolute.View //////////////////////////////
-
-HEUI.Container.Vertical = {}
-
-///////////////////////////////////// Block.Container.Vertical.Config //////////////////////////////
-HEUI.Container.Vertical.Config = React.createClass({
-  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive,
-          configurableMixins, blockAttributeMixins, blockContentMixins],
-  getStyle: function(){
-    var defaultStyle = this.getDefaultStyle();
-    var style = this.props.style;
-    var labStyle = this.getLab().get('style', {})
-    //merge style
-    return _.merge(defaultStyle, style, labStyle);
-  },
-  getDefaultStyle: function(){
-    return {padding: '0px'};
-  },
-  componentDidMount: function () {
-    var thisElement = React.findDOMNode(this.refs.block);
-    var self = this;
-  },
-
-  render: function(){
-    return this.defaultRender();
-  }
-})
-///////////////////////////////////// Block.Container.Vertical.Config //////////////////////////////
 
 HEUI.Container.Sortable = {};
 ///////////////////////////////////// Block.Container.Sortable.Edit //////////////////////////////
@@ -1187,6 +1160,7 @@ HEUI.Container.Sortable.Edit = React.createClass({
   }  
 })
 ///////////////////////////////////// Block.Container.Sortable.Edit //////////////////////////////
+
 ///////////////////////////////////// Block.Container.Sortable.View //////////////////////////////
 HEUI.Container.Sortable.View = React.createClass({
   mixins: [HE.UI.mixins.common],
@@ -1207,6 +1181,33 @@ HEUI.Container.Sortable.View = React.createClass({
   }  
 })
 ///////////////////////////////////// Block.Container.Sortable.View //////////////////////////////
+
+HEUI.Container.Vertical = {}
+
+///////////////////////////////////// Block.Container.Vertical.Config //////////////////////////////
+HEUI.Container.Vertical.Config = React.createClass({
+  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive,
+          configurableMixins, blockAttributeMixins, blockContentMixins],
+  getStyle: function(){
+    var defaultStyle = this.getDefaultStyle();
+    var style = this.props.style;
+    var labStyle = this.getLab().get('style', {})
+    //merge style
+    return _.merge(defaultStyle, style, labStyle);
+  },
+  getDefaultStyle: function(){
+    return {padding: '0px'};
+  },
+  componentDidMount: function () {
+    var thisElement = React.findDOMNode(this.refs.block);
+    var self = this;
+  },
+
+  render: function(){
+    return this.defaultRender();
+  }
+})
+///////////////////////////////////// Block.Container.Vertical.Config //////////////////////////////
 
 ///////////////////////////////////// Block.Container.Vertical.Edit //////////////////////////////
 HEUI.Container.Vertical.Edit = React.createClass({
@@ -1235,7 +1236,7 @@ HEUI.Container.Vertical.Edit = React.createClass({
   render: function(){
     var childBlocks = this.getLab().get('blocks', []);
     var self = this;
-    return <div className="he-DesignBlock he-ContainerBlock__Vertical_Edit" onDoubleClick={this.handleDoubleClick} style={this.getStyle()} ref="block" tabIndex={this.getTabIndex()}>
+    return <div className="he-DesignBlock he-ContainerBlock__Vertical _Edit" onDoubleClick={this.handleDoubleClick} style={this.getStyle()} ref="block" tabIndex={this.getTabIndex()}>
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {
@@ -1284,7 +1285,7 @@ HEUI.Container.Vertical.View = React.createClass({
   render: function(){
     var childBlocks = this.getLab().get('blocks', []);
     var self = this;
-    return <div className="he-ViewBlock he-ContainerBlock__Vertical_View" style={this.getStyle()} ref="block">
+    return <div className="he-ViewBlock he-ContainerBlock__Vertical _View" style={this.getStyle()} ref="block">
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {
@@ -1308,15 +1309,125 @@ HEUI.Container.Vertical.View = React.createClass({
 HEUI.Container.Horizontal = {}
 
 ///////////////////////////////////// Block.Container.Horizontal.Config //////////////////////////////
+HEUI.Container.Horizontal.Config = React.createClass({
+  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive,
+          configurableMixins, blockAttributeMixins, blockContentMixins],
+  getStyle: function(){
+    var defaultStyle = this.getDefaultStyle();
+    var style = this.props.style;
+    var labStyle = this.getLab().get('style', {})
+    //merge style
+    return _.merge(defaultStyle, style, labStyle);
+  },
+  getDefaultStyle: function(){
+    return {padding: '0px'};
+  },
+  componentDidMount: function () {
+    var thisElement = React.findDOMNode(this.refs.block);
+    var self = this;
+  },
+
+  render: function(){
+    return this.defaultRender();
+  }
+})
 ///////////////////////////////////// Block.Container.Horizontal.Config //////////////////////////////
 
 ///////////////////////////////////// Block.Container.Horizontal.Edit //////////////////////////////
+HEUI.Container.Horizontal.Edit = React.createClass({
+  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive, 
+            resizeableMixins, draggableMixins, dropableMixins, editableMixins, blockAttributeMixins],
+  getStyle: function(){
+    var defaultStyle = this.getDefaultStyle();
+    var style = this.props.style;
+    var labStyle = this.getLab().get('style', {})
+    //merge style
+    return _.merge(defaultStyle, style, labStyle);
+  },
+  getDefaultStyle: function(){
+    return {width:'60px', height: '60px', top: '0px', left: '0px', padding: '0px'};
+  },
+  dropHandler: function(event){
+
+  },
+  componentDidMount: function () {
+    var thisElement = React.findDOMNode(this.refs.block);
+    var self = this;
+  },
+  handleDoubleClick: function(event){
+    this.getLab().set('style.height', 'auto');
+  },
+  render: function(){
+    var childBlocks = this.getLab().get('blocks', []);
+    var self = this;
+    return <div className="he-DesignBlock he-ContainerBlock__Horizontal _Edit" onDoubleClick={this.handleDoubleClick} style={this.getStyle()} ref="block" tabIndex={this.getTabIndex()}>
+            {
+              childBlocks.length?
+              childBlocks.map(function(val, key) {
+                if(val.type !== undefined){
+                  var componentName = HE.utils.getComponentByBlockType(val.type, 'Edit');
+                  var childLab = self.getLab().link('blocks.' + key)
+                  return React.createElement(HEUI.Container.Sortable.Edit, {key: key, "data-container": self},
+                          React.createElement(componentName, {"data-lab": childLab})
+                        )
+                } else {
+                  return null;
+                }
+              })
+              :null
+            }
+            <HEUI.Container.Sortable.Edit className="__Placeholder" key="a" data-container={self}></HEUI.Container.Sortable.Edit>
+          </div>;
+  }
+})
 ///////////////////////////////////// Block.Container.Horizontal.Edit //////////////////////////////
 
 ///////////////////////////////////// Block.Container.Horizontal.Attributes ////////////////////////
 ///////////////////////////////////// Block.Container.Horizontal.Attributes ////////////////////////
 
 ///////////////////////////////////// Block.Container.Horizontal.View //////////////////////////////
+HEUI.Container.Horizontal.View = React.createClass({
+  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive
+            ],
+  getStyle: function(){
+    var defaultStyle = this.getDefaultStyle();
+    var style = this.props.style;
+    var labStyle = this.getLab().get('style', {})
+    //merge style
+    return _.merge(defaultStyle, style, labStyle);
+  },
+  getDefaultStyle: function(){
+    return {width:'60px', height: '60px', top: '0px', left: '0px', padding: '0px'};
+  },
+  dropHandler: function(event){
+
+  },
+  componentDidMount: function () {
+    var thisElement = React.findDOMNode(this.refs.block);
+    var self = this;
+  },
+  render: function(){
+    var childBlocks = this.getLab().get('blocks', []);
+    var self = this;
+    return <div className="he-ViewBlock he-ContainerBlock__Horizontal _View" style={this.getStyle()} ref="block">
+            {
+              childBlocks.length?
+              childBlocks.map(function(val, key) {
+                if(val.type !== undefined){
+                  var componentName = HE.utils.getComponentByBlockType(val.type, 'View');
+                  var childLab = self.getLab().link('blocks.' + key)
+                  return React.createElement(HEUI.Container.Sortable.View, {key: key, "data-container": self},
+                          React.createElement(componentName, {"data-lab": childLab})
+                        )
+                } else {
+                  return null;
+                }
+              })
+              :null
+            }
+          </div>;
+  }
+})
 ///////////////////////////////////// Block.Container.Horizontal.View //////////////////////////////
 
 module.exports = HEUI;
