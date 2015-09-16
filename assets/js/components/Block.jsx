@@ -15,7 +15,7 @@ var blockAttributeMixins = {
     //on block active
     jQuery(thisElement).on('mousedown', function(event){
       jQuery(document).trigger('blockactivate',[event, self.getLab()]);
-      jQuery(thisElement).focus();
+      HE.utils.focusBlock(thisElement)
       //prevent any futher process
       event.stopPropagation();
     })
@@ -54,7 +54,6 @@ var resizeableMixins = {
           .css('left', hRulerLeft)
           .css('width', this.getStyle().width)
           .css('height', '20px')
-          .css('padding', this.getStyle().padding)
           .html('<span>' + this.getStyle().width + '</span>')
 
     var vRuler = jQuery('.he-Ruler__Vertical').first();
@@ -69,7 +68,6 @@ var resizeableMixins = {
           .css('left', vRulerLeft)
           .css('width', '20px')
           .css('height', this.getStyle().height)
-          .css('padding', this.getStyle().padding)
           .html('<span>' + this.getStyle().height + '</span>')
   },
   hideRules: function(event){
@@ -435,6 +433,36 @@ var editableMixins = {
           event.stopImmediatePropagation();
       }
     })
+
+    //on selected block
+    jQuery(thisElement).on('click', function(event){
+      var activeBlock = self.getLab().getFullNS()
+      self.getLab().setState('activeBlock', activeBlock);
+      jQuery(thisElement).focus();
+      event.stopPropagation();
+    })
+
+    // create an observer instance
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if(mutation.attributeName === 'style'){
+          //style is changed without explicit source
+          HE.utils.nextTick(function(){
+            if(!HE.cache.get('changingLabSource', 0)){
+              self.getLab().set('style', HE.utils.cssTextToReactObject(thisElement.style.cssText));
+            }            
+          })
+        }
+      });
+    });
+     
+    // configuration of the observer:
+    var config = { attributes: true};
+     
+    // pass in the target node, as well as the observer options
+    observer.observe(thisElement, config);
+     
+
   },
   componentDidUpdate: function(){
     var thisElement = React.findDOMNode(this.refs.block);
@@ -444,7 +472,7 @@ var editableMixins = {
     if(activeBlock && activeBlock == self.getLab().getFullNS()){
       setTimeout(function(){
         jQuery(document).trigger('blockactivate',[null, self.getLab()]);
-        // jQuery(thisElement).focus();
+        HE.utils.focusBlock(thisElement)
       },10);
     }
   },
@@ -468,11 +496,11 @@ HEUI = React.createClass({
 HEUI.Attributes = React.createClass({
   mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive],
   getStyle: function(){
-    var style = this.props.style;
+    var style = {};//this.props.style;
     var labStyle = this.getLab().get('style', {})  
     
     //merge style
-    return _.merge(style, labStyle);
+    return jQuery.extend({}, style, labStyle);
   },
   componentDidMount: function () {
     var thisElement = React.findDOMNode(this.refs.block);
@@ -510,6 +538,9 @@ HEUI.Attributes = React.createClass({
         HE.hook.do_action('updateBlockAttribute__' + contentAction, self)
       })
     }
+  },
+  removeAttribute: function(attr){
+    this.getLab().clear('style.' + attr)
   },
   render: function(){
     var attributes = this.getStyle();
@@ -567,8 +598,11 @@ HEUI.Attributes = React.createClass({
               <div>
               {jQuery.map(attributes, function(value, key){
                 if(self.getLab()){
-                  return <HE.UI.components.Form.Text onKeyDown={self.handleChangeStyles} key={key} name={key} title={key} value={self.getLab().link('style.' + key)}>
-                        </HE.UI.components.Form.Text>                
+                  return (<div key={key}>
+                        <HE.UI.components.Form.Text onKeyDown={self.handleChangeStyles} name={key} title={HE.utils.camelCaseToDash(key)} value={self.getLab().link('style.' + key)}>
+                        </HE.UI.components.Form.Text>
+                        <button onClick={self.removeAttribute.bind(self, key)}>X</button>
+                        </div>)
                 } else {
                   return null;
                 }
@@ -708,7 +742,7 @@ HEUI.Content.Config = React.createClass({
     return _.merge(defaultStyle, style, labStyle);
   },
   getDefaultStyle: function(){
-    return {padding: '0px'};
+    return {};
   },
   componentDidMount: function () {
     var thisElement = React.findDOMNode(this.refs.block);
@@ -736,7 +770,7 @@ HEUI.Content.Edit = React.createClass({
     return _.merge(defaultStyle, style, labStyle);
   },
   getDefaultStyle: function(){
-    return {width:'auto', height: 'auto', top: '0px', left: '0px', padding: '0px'};
+    return {width:'auto', height: 'auto', top: '0px', left: '0px'};
   },
   dropHandler: function(event){
 
@@ -781,7 +815,7 @@ HEUI.Content.View = React.createClass({
     return _.merge(defaultStyle, style, labStyle);
   },
   getDefaultStyle: function(){
-    return {width:'auto', height: 'auto', top: '0px', left: '0px', padding: '0px'};
+    return {width:'auto', height: 'auto', top: '0px', left: '0px'};
   },
 
   render: function(){
@@ -812,7 +846,7 @@ HEUI.Box.Edit = React.createClass({
     return style;
   },
   getDefaultStyle: function(){
-    return {width:'100px', height: '100px', padding: '0px'};
+    return {width:'100px', height: '100px'};
   },
   componentDidMount: function () {
     var thisElement = React.findDOMNode(this.refs.block);
@@ -858,7 +892,7 @@ HEUI.Box.View = React.createClass({
     return style;
   },
   getDefaultStyle: function(){
-    return {width:'100px', height: '100px', padding: '0px'};
+    return {width:'100px', height: '100px'};
   },
   render: function(){
     var childBlocks = this.getLab().get('blocks', []);
@@ -898,7 +932,7 @@ HEUI.Container.Absolute.Config = React.createClass({
     return _.merge(defaultStyle, style, labStyle);
   },
   getDefaultStyle: function(){
-    return {padding: '0px'};
+    return {};
   },
   componentDidMount: function () {
     var thisElement = React.findDOMNode(this.refs.block);
@@ -923,7 +957,7 @@ HEUI.Container.Absolute.Edit = React.createClass({
     return _.merge(defaultStyle, style, labStyle);
   },
   getDefaultStyle: function(){
-    return {width:'60px', height: '60px', top: '0px', left: '0px', padding: '0px'};
+    return {width:'60px', height: '60px', top: '0px', left: '0px'};
   },
   dropHandler: function(event){
 
@@ -970,7 +1004,7 @@ HEUI.Container.Absolute.View = React.createClass({
     return _.merge(defaultStyle, style, labStyle);
   },
   getDefaultStyle: function(){
-    return {width:'60px', height: '60px', top: '0px', left: '0px', padding: '0px'};
+    return {width:'60px', height: '60px', top: '0px', left: '0px'};
   },
   dropHandler: function(event){
 
@@ -1196,7 +1230,7 @@ HEUI.Container.Vertical.Config = React.createClass({
     return _.merge(defaultStyle, style, labStyle);
   },
   getDefaultStyle: function(){
-    return {padding: '0px'};
+    return {};
   },
   componentDidMount: function () {
     var thisElement = React.findDOMNode(this.refs.block);
@@ -1221,7 +1255,7 @@ HEUI.Container.Vertical.Edit = React.createClass({
     return _.merge(defaultStyle, style, labStyle);
   },
   getDefaultStyle: function(){
-    return {width:'60px', height: '60px', top: '0px', left: '0px', padding: '0px'};
+    return {width:'60px', height: '60px', top: '0px', left: '0px'};
   },
   dropHandler: function(event){
 
@@ -1273,7 +1307,7 @@ HEUI.Container.Vertical.View = React.createClass({
     return _.merge(defaultStyle, style, labStyle);
   },
   getDefaultStyle: function(){
-    return {width:'60px', height: '60px', top: '0px', left: '0px', padding: '0px'};
+    return {width:'60px', height: '60px', top: '0px', left: '0px'};
   },
   dropHandler: function(event){
 
@@ -1320,7 +1354,7 @@ HEUI.Container.Horizontal.Config = React.createClass({
     return _.merge(defaultStyle, style, labStyle);
   },
   getDefaultStyle: function(){
-    return {padding: '0px'};
+    return {};
   },
   componentDidMount: function () {
     var thisElement = React.findDOMNode(this.refs.block);
@@ -1345,7 +1379,7 @@ HEUI.Container.Horizontal.Edit = React.createClass({
     return _.merge(defaultStyle, style, labStyle);
   },
   getDefaultStyle: function(){
-    return {width:'60px', height: '60px', top: '0px', left: '0px', padding: '0px'};
+    return {width:'60px', height: '60px', top: '0px', left: '0px'};
   },
   dropHandler: function(event){
 
@@ -1397,7 +1431,7 @@ HEUI.Container.Horizontal.View = React.createClass({
     return _.merge(defaultStyle, style, labStyle);
   },
   getDefaultStyle: function(){
-    return {width:'60px', height: '60px', top: '0px', left: '0px', padding: '0px'};
+    return {width:'60px', height: '60px', top: '0px', left: '0px'};
   },
   dropHandler: function(event){
 

@@ -131,6 +131,43 @@ HE.utils = {
 	focusInput: function(name){
 		var input = jQuery("[name=\"" + name + "\"]");
 		input.focus()
+	},
+	focusBlock: function(element){
+    jQuery('.he-focus').removeClass('he-focus');
+    jQuery(element).addClass('he-focus')
+	},
+	cssTextToReactObject: function(cssText){
+    var camelCase = require('camel-case');
+		var quote = require('quote')({quotes: '"'});
+		var jsStringEscape = require('js-string-escape');
+		
+		var rtnObj = {};
+
+		cssText.split('\n')
+					.join(' ')
+					.split(';')
+					.filter(function(line){
+						return (line !== undefined && line !== '')
+					})
+					.map(function(line){
+								var parts = line.split(':');
+						    var key = camelCase(parts[0]);
+						    var value = parts[1];
+						    if (value === '@light') {
+						        value = 'weight.light';
+						    } else if (value === '@regular') {
+						        value = 'weight.regular';
+						    } else if (value === '@medium') {
+						        value = 'weight.medium';
+						    }
+
+						    rtnObj[key] = String(value).trim();
+						    return {key:value};
+    					})
+		return rtnObj;
+	},
+	camelCaseToDash: function(camelCase){
+		return camelCase.replace(/\.?([A-Z])/g, function (x,y){return "-" + y.toLowerCase()})
 	}
 }
 ////////////////////////////////// Utils ///////////////////////////////////////

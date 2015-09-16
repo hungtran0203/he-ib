@@ -103,6 +103,7 @@ $he-panel-bg: #FFFFFF;
   text-align: center;
   padding-top: 0px !important;
   padding-bottom: 0px !important;
+  z-index: 9999;
 }
 .he-Ruler__Vertical {
 	position: absolute;
@@ -116,6 +117,7 @@ $he-panel-bg: #FFFFFF;
 		margin-top: -50%;
 		transform: rotate(-90deg);  	
   }
+  z-index: 9999;
 }
 
 .he-BlockCoordinate {
@@ -306,6 +308,11 @@ $he-panel-bg: #FFFFFF;
 	position: absolute;
 }
 
+.he-DesignBlock {
+	&.he-focus {
+		border-color: blue;
+	}
+}
 .he-hidden {
 	display: none;
 }

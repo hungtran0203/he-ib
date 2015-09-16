@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "camel-case": "^1.1.2",
     "envify": "^3.4.0",
     "interact.js": "^1.2.4",
     "jquery": "^2.1.4",
+    "js-string-escape": "^1.0.0",
     "jsx-loader": "^0.13.2",
     "lodash": "^3.10.1",
     "node-sass": "^3.3.2",
+    "quote": "^0.4.0",
     "react": "^0.13.3",
     "react-webpack": "^0.4.1",
     "sass-loader": "^2.0.1"

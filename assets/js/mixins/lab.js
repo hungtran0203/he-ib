@@ -36,11 +36,13 @@ var labMixins = {
 		      var ui = this;
 		      this.labBinders['set'] = lab.bind('*', 'set', function(){
 		      	if(ui.isMounted()){
+							HE.cache.set('changingLabSource', 1, 1000);
 			        ui.setState({'data-lab': lab});
 		      	}
 		      });
 		      this.labBinders['clear'] = lab.bind('*', 'clear', function(){
 		      	if(ui.isMounted()){
+							HE.cache.set('changingLabSource', 1, 1000);
 			        ui.setState({'data-lab': lab});
 			       }
 		      });
