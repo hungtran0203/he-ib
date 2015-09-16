@@ -110,14 +110,28 @@ var App = React.createClass({
 			localStorage.setItem('heStore', JSON.stringify(this.store.getVal()));
 		},
 		handleClearButtonClick: function(event){
-			localStorage.removeItem('heStore');
-			this.loadIBLab();
-			this.refs.config.setLab(this.configBlocks)
-			this.refs.edit.setLab(this.store.link('heStore'))
-			this.forceUpdate();
+			var editingBox = HE.HEState.getState('editingBox', null);
+			var originalData = HE.cache.get('originalEditingBoxData', null);
+			if(editingBox!== null && originalData){
+				this.getLab().set('boxes.' + editingBox, jQuery.extend(true, {}, {title: originalData.title?originalData.title:'New Box'}))
+			}
+			// localStorage.removeItem('heStore');
+			// this.loadIBLab();
+			// this.refs.config.setLab(this.configBlocks)
+			// this.refs.edit.setLab(this.store.link('heStore'))
+			// this.forceUpdate();
 		},
 		handleDoneButtonClick: function(event){
+			this.handleSaveButtonClick(event);
 			HE.HEState.clearState('editingBox');
+			this.forceUpdate();
+		},
+		handleDiscardButtonClick: function(event){
+			var originalData = HE.cache.get('originalEditingBoxData', null);
+			var editingBox = HE.HEState.getState('editingBox', null);
+			if(editingBox!== null && originalData){
+				this.getLab().set('boxes.' + editingBox, jQuery.extend(true, {}, originalData))
+			}
 		},
 		getEditingBox: function(){
 			return HE.HEState.getState('editingBox', null);
@@ -165,6 +179,7 @@ var App = React.createClass({
 		  				<button onClick={this.handleSaveButtonClick}>Save</button>
 		  				<button onClick={this.handleClearButtonClick}>Clear</button>
 		  				<button onClick={this.handleDoneButtonClick}>Done</button>
+		  				<button onClick={this.handleDiscardButtonClick}>Discard Changes</button>
 		  			</div>
       			<div>Box: {editingBoxLab.get('title')}</div>
 		  			<div className="he-DesignViewPort">

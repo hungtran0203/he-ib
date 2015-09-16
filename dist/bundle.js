@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "715722ce6ce7a2559f80"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "b6a7bf798ea782cfae18"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -994,14 +994,28 @@
 				localStorage.setItem('heStore', JSON.stringify(this.store.getVal()));
 			},
 			handleClearButtonClick: function(event){
-				localStorage.removeItem('heStore');
-				this.loadIBLab();
-				this.refs.config.setLab(this.configBlocks)
-				this.refs.edit.setLab(this.store.link('heStore'))
-				this.forceUpdate();
+				var editingBox = HE.HEState.getState('editingBox', null);
+				var originalData = HE.cache.get('originalEditingBoxData', null);
+				if(editingBox!== null && originalData){
+					this.getLab().set('boxes.' + editingBox, jQuery.extend(true, {}, {title: originalData.title?originalData.title:'New Box'}))
+				}
+				// localStorage.removeItem('heStore');
+				// this.loadIBLab();
+				// this.refs.config.setLab(this.configBlocks)
+				// this.refs.edit.setLab(this.store.link('heStore'))
+				// this.forceUpdate();
 			},
 			handleDoneButtonClick: function(event){
+				this.handleSaveButtonClick(event);
 				HE.HEState.clearState('editingBox');
+				this.forceUpdate();
+			},
+			handleDiscardButtonClick: function(event){
+				var originalData = HE.cache.get('originalEditingBoxData', null);
+				var editingBox = HE.HEState.getState('editingBox', null);
+				if(editingBox!== null && originalData){
+					this.getLab().set('boxes.' + editingBox, jQuery.extend(true, {}, originalData))
+				}
 			},
 			getEditingBox: function(){
 				return HE.HEState.getState('editingBox', null);
@@ -1048,7 +1062,8 @@
 			  			React.createElement("div", {className: "he-ib-design-toolbar"}, 
 			  				React.createElement("button", {onClick: this.handleSaveButtonClick}, "Save"), 
 			  				React.createElement("button", {onClick: this.handleClearButtonClick}, "Clear"), 
-			  				React.createElement("button", {onClick: this.handleDoneButtonClick}, "Done")
+			  				React.createElement("button", {onClick: this.handleDoneButtonClick}, "Done"), 
+			  				React.createElement("button", {onClick: this.handleDiscardButtonClick}, "Discard Changes")
 			  			), 
 	      			React.createElement("div", null, "Box: ", editingBoxLab.get('title')), 
 			  			React.createElement("div", {className: "he-DesignViewPort"}, 
@@ -25573,7 +25588,7 @@
 	    }
 	    hRuler.removeClass('he-hidden')
 	    var thisOffset = $thisBlock.offset();
-	    var hRulerTop = thisOffset.top - 25
+	    var hRulerTop = thisOffset.top - 40
 	    var hRulerLeft = thisOffset.left
 	    hRuler.css('top', hRulerTop)
 	          .css('left', hRulerLeft)
@@ -25637,7 +25652,7 @@
 	    }
 	    var offset = $thisBlock.offset();
 	    var style = this.getStyle();
-	    coordinate.css('top', offset.top -25)
+	    coordinate.css('top', offset.top -35)
 	          .css('left', offset.left -25)
 	          .css('height', '20px')
 	          .html('<span>' + style.left + ':' + style.top + '</span>')
@@ -26100,11 +26115,11 @@
 	            React.createElement(HE.UI.components.Panel, {className: "__Basic _pointer"}, 
 	              React.createElement("div", null, "Basic Settings"), 
 	              React.createElement("div", null, 
+	                React.createElement(HE.UI.components.Form.Text, {key: "type", name: "type", title: "type", disabled: true, value: self.getLab().get('type')}
+	                ), 
+	                React.createElement(HE.UI.components.Form.Text, {key: "name", name: "name", title: "name", disabled: true, value: self.getLab().get('name')}
+	                ), 
 	                React.createElement(HE.UI.components.Form.Text, {key: "title", name: "title", title: "title", value: self.getLab().link('title')}
-	                ), 
-	                React.createElement(HE.UI.components.Form.Text, {key: "name", name: "name", title: "name", value: self.getLab().link('name')}
-	                ), 
-	                React.createElement(HE.UI.components.Form.Text, {key: "type", name: "type", title: "type", value: self.getLab().link('type')}
 	                )
 	              )
 	            ), 
@@ -26232,6 +26247,7 @@
 	  },
 	  editBox: function(lab){
 	    HE.HEState.setState('editingBox', lab.getShortNS())
+	    HE.cache.set('originalEditingBoxData', jQuery.extend(true, {}, lab.getVal()))
 	  },
 	  render: function(){
 	    var self = this;

@@ -48,7 +48,7 @@ var resizeableMixins = {
     }
     hRuler.removeClass('he-hidden')
     var thisOffset = $thisBlock.offset();
-    var hRulerTop = thisOffset.top - 25
+    var hRulerTop = thisOffset.top - 40
     var hRulerLeft = thisOffset.left
     hRuler.css('top', hRulerTop)
           .css('left', hRulerLeft)
@@ -112,7 +112,7 @@ var draggableMixins = {
     }
     var offset = $thisBlock.offset();
     var style = this.getStyle();
-    coordinate.css('top', offset.top -25)
+    coordinate.css('top', offset.top -35)
           .css('left', offset.left -25)
           .css('height', '20px')
           .html('<span>' + style.left + ':' + style.top + '</span>')
@@ -575,11 +575,11 @@ HEUI.Attributes = React.createClass({
             <HE.UI.components.Panel className="__Basic _pointer">
               <div>Basic Settings</div>
               <div>
+                <HE.UI.components.Form.Text key="type" name="type" title="type" disabled={true} value={self.getLab().get('type')}>
+                </HE.UI.components.Form.Text>
+                <HE.UI.components.Form.Text key="name" name="name" title="name" disabled={true} value={self.getLab().get('name')}>
+                </HE.UI.components.Form.Text>
                 <HE.UI.components.Form.Text key="title" name="title" title="title" value={self.getLab().link('title')}>
-                </HE.UI.components.Form.Text>
-                <HE.UI.components.Form.Text key="name" name="name" title="name" value={self.getLab().link('name')}>
-                </HE.UI.components.Form.Text>
-                <HE.UI.components.Form.Text key="type" name="type" title="type" value={self.getLab().link('type')}>
                 </HE.UI.components.Form.Text>
               </div>
             </HE.UI.components.Panel>
@@ -707,6 +707,7 @@ HEUI.BoxList = React.createClass({
   },
   editBox: function(lab){
     HE.HEState.setState('editingBox', lab.getShortNS())
+    HE.cache.set('originalEditingBoxData', jQuery.extend(true, {}, lab.getVal()))
   },
   render: function(){
     var self = this;
