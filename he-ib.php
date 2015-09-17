@@ -115,7 +115,7 @@ class HEIBApp {
 	}
 	
 	public static function admin_content(){
-		echo '<div id="hip_wrapper"></div>';
+		echo '<div id="heib_wrapper"></div>';
 	}
 
 	/****************************************** End hook call back function ***************************************/

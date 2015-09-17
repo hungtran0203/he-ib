@@ -58,7 +58,7 @@ HE.hook.add_filter('get_config_block_data', function(configBlockData){
 																		);
 	return configBlockData;
 })
-var App = React.createClass({
+var HEIBApp = React.createClass({
 		mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive],
 		getInitialState: function() {
 			this.loadIBLab();
@@ -173,7 +173,7 @@ var App = React.createClass({
     		}
     		return (
     			<div>
-		  			<div className="he-ib-design-toolbar">
+		  			<div className="he-DesignToolBar">
 		  				<button onClick={this.handleSaveButtonClick}>Save</button>
 		  			</div>
     				<div className="he-DesignViewPort">
@@ -187,7 +187,7 @@ var App = React.createClass({
     		var editingBoxLab = this.getBoxLab(this.getEditingBox());
     		return (
     			<div>
-		  			<div className="he-ib-design-toolbar">
+		  			<div className="he-he-DesignToolBar">
 		  				<button onClick={this.handleSaveButtonClick}>Save</button>
 		  				<button onClick={this.handleClearButtonClick}>Clear</button>
 		  				<button onClick={this.handleDoneButtonClick}>Done</button>
@@ -243,4 +243,4 @@ var App = React.createClass({
     }
 });
 
-React.render(<App/>, document.body);
+React.render(<HEIBApp/>, document.getElementById('heib_wrapper'));
