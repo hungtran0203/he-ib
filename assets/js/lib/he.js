@@ -168,6 +168,22 @@ HE.utils = {
 	},
 	camelCaseToDash: function(camelCase){
 		return camelCase.replace(/\.?([A-Z])/g, function (x,y){return "-" + y.toLowerCase()})
+	},
+	resolveValueInData: function(val, data){
+		var ns = null;
+		if(typeof data === 'object'){
+			for(var key in data){
+				if(data[key] === val) {
+					return key;
+				} else {
+					var found = HE.utils.resolveValueInData(val, data[key])
+					if(found !== null) {
+						return key + '.' + found;
+					}
+				}
+			}
+		}
+		return ns;
 	}
 }
 ////////////////////////////////// Utils ///////////////////////////////////////
@@ -207,6 +223,110 @@ HE.cache = {
 }
 ////////////////////////////////// Cache ///////////////////////////////////////
 
+////////////////////////////////// Stack ///////////////////////////////////////
+HE.stack = {
+	maxStackBuffer: 100,
+	Stack: function(stackName){
+		this.stackName = stackName;
+		this.data = [];
+		this.pointer = -1;
+		this.resetDataToCurrentPointer = function(){
+			if(this.data.length <= (this.pointer + 1)){
+
+			} else {
+				this.data.splice(this.pointer + 1)
+			}
+			return this;
+		}
+		this.push = function(val){
+			this.resetDataToCurrentPointer();
+			this.data.push(val)
+			this.pointer = this.data.length - 1;
+			//check max buffer stack
+			if(this.pointer >= HE.stack.maxStackBuffer) {
+				this.data.shift();
+				this.pointer --;
+			}
+			return this;
+		}
+		this.current = function(){
+			return this.data[this.pointer];
+		}
+		this.pop = function(){
+			this.resetDataToCurrentPointer();
+			var data = this.data.pop();
+			this.pointer --;
+			//check min pointer value
+			this.pointer = this.pointer >= -1? this.pointer : -1;
+			return data;
+		}
+		this.hasPrev = function(){
+			return (this.pointer > 0)?true : false;
+		}
+		this.backward = function(){
+			this.pointer --;
+			this.pointer = this.pointer >= -1? this.pointer : -1;
+			return this;
+		}
+		this.hasNext = function(){
+			return (this.pointer < this.data.length - 1)?true : false;
+		}
+		this.forward = function(){
+			this.pointer ++;
+			this.pointer = (this.pointer >= this.data.length)? this.data.length - 1 : this.pointer;
+			return this;
+		}
+		this.reset = function(){
+			this.data = [];
+			this.pointer = -1;
+		}
+		return this;
+	},
+	getInstance: function(stackName){
+		return HE.cache.rememberForever('____stack.' + stackName, function(){
+			return new HE.stack.Stack(stackName);
+		})
+	}
+}
+////////////////////////////////// Stack ///////////////////////////////////////
+
+HE.boxStack = {
+	pushState: function(){
+		HE.stack.getInstance('editingBoxDataStack').push(jQuery.extend(true, {}, HE.boxStack.currentState()));
+		HE.hook.do_action('changedHEState__editedBox')
+	},
+	hasNextState: function(){
+		return HE.stack.getInstance('editingBoxDataStack').hasNext();
+	},
+	nextState: function(){
+		return HE.stack.getInstance('editingBoxDataStack').forward().current();
+	},
+	hasPrevState: function(){
+		return HE.stack.getInstance('editingBoxDataStack').hasPrev();
+	},
+	prevState: function(){
+		return HE.stack.getInstance('editingBoxDataStack').backward().current();
+	},
+	reset: function(){
+		return HE.stack.getInstance('editingBoxDataStack').reset();
+	},
+	currentState: function(){
+		var editingBox = HE.HEState.getState('editingBox', null);
+		var currentState;
+		var lab = HE.boxStack.getCurrentBoxLab();
+		if(lab !== null){
+			currentState = lab.getVal();
+		}
+		return currentState;
+	},
+	getCurrentBoxLab: function(){
+		var editingBox = HE.HEState.getState('editingBox', null);
+		if(editingBox !== null){
+			return window.store.link('boxes.' + editingBox)
+		}
+		return null;
+	}
+}
 //////////////////////////////// Hook__Filter //////////////////////////////////
 HE.hook = {
 	defaultPriority: 10,

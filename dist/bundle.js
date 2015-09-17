@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "b6a7bf798ea782cfae18"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "d48662f1e0a066e05573"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -958,6 +958,7 @@
 				//on HEState change bindings
 				self.bindHEState('editingBox');
 				self.bindHEState('selectedBox');
+				self.bindHEState('editedBox');
 
 
 				return {'redraw': true};
@@ -995,9 +996,8 @@
 			},
 			handleClearButtonClick: function(event){
 				var editingBox = HE.HEState.getState('editingBox', null);
-				var originalData = HE.cache.get('originalEditingBoxData', null);
-				if(editingBox!== null && originalData){
-					this.getLab().set('boxes.' + editingBox, jQuery.extend(true, {}, {title: originalData.title?originalData.title:'New Box'}))
+				if(editingBox!== null){
+					this.getLab().set('boxes.' + editingBox, jQuery.extend(true, {}, {title: 'New Box'}))
 				}
 				// localStorage.removeItem('heStore');
 				// this.loadIBLab();
@@ -1005,17 +1005,29 @@
 				// this.refs.edit.setLab(this.store.link('heStore'))
 				// this.forceUpdate();
 			},
+			handleUndoButtonClick: function(event){
+				var undoState = jQuery.extend(true, {}, HE.boxStack.prevState());
+				HE.boxStack.getCurrentBoxLab().quite().setVal(undoState);
+				this.forceUpdate();
+			},
+			handleRedoButtonClick: function(event){
+				var redoState = jQuery.extend(true, {}, HE.boxStack.nextState());
+				HE.boxStack.getCurrentBoxLab().quite().setVal(redoState);
+				this.forceUpdate();
+			},
 			handleDoneButtonClick: function(event){
 				this.handleSaveButtonClick(event);
 				HE.HEState.clearState('editingBox');
+				HE.boxStack.reset();
 				this.forceUpdate();
 			},
 			handleDiscardButtonClick: function(event){
-				var originalData = HE.cache.get('originalEditingBoxData', null);
-				var editingBox = HE.HEState.getState('editingBox', null);
-				if(editingBox!== null && originalData){
-					this.getLab().set('boxes.' + editingBox, jQuery.extend(true, {}, originalData))
-				}
+				var undoState;
+				do {
+					undoState = HE.boxStack.prevState();	
+				} while(HE.boxStack.hasPrevState())
+				HE.boxStack.getCurrentBoxLab().quite().setVal(undoState);
+				this.forceUpdate();			
 			},
 			getEditingBox: function(){
 				return HE.HEState.getState('editingBox', null);
@@ -1063,7 +1075,9 @@
 			  				React.createElement("button", {onClick: this.handleSaveButtonClick}, "Save"), 
 			  				React.createElement("button", {onClick: this.handleClearButtonClick}, "Clear"), 
 			  				React.createElement("button", {onClick: this.handleDoneButtonClick}, "Done"), 
-			  				React.createElement("button", {onClick: this.handleDiscardButtonClick}, "Discard Changes")
+			  				React.createElement("button", {disabled: !HE.boxStack.hasPrevState(), onClick: this.handleUndoButtonClick}, "Undo"), 
+		  					React.createElement("button", {disabled: !HE.boxStack.hasNextState(), onClick: this.handleRedoButtonClick}, "Redo"), 
+			  				React.createElement("button", {disabled: !HE.boxStack.hasPrevState(), onClick: this.handleDiscardButtonClick}, "Discard")
 			  			), 
 	      			React.createElement("div", null, "Box: ", editingBoxLab.get('title')), 
 			  			React.createElement("div", {className: "he-DesignViewPort"}, 
@@ -22434,6 +22448,22 @@
 		},
 		camelCaseToDash: function(camelCase){
 			return camelCase.replace(/\.?([A-Z])/g, function (x,y){return "-" + y.toLowerCase()})
+		},
+		resolveValueInData: function(val, data){
+			var ns = null;
+			if(typeof data === 'object'){
+				for(var key in data){
+					if(data[key] === val) {
+						return key;
+					} else {
+						var found = HE.utils.resolveValueInData(val, data[key])
+						if(found !== null) {
+							return key + '.' + found;
+						}
+					}
+				}
+			}
+			return ns;
 		}
 	}
 	////////////////////////////////// Utils ///////////////////////////////////////
@@ -22473,6 +22503,110 @@
 	}
 	////////////////////////////////// Cache ///////////////////////////////////////
 
+	////////////////////////////////// Stack ///////////////////////////////////////
+	HE.stack = {
+		maxStackBuffer: 100,
+		Stack: function(stackName){
+			this.stackName = stackName;
+			this.data = [];
+			this.pointer = -1;
+			this.resetDataToCurrentPointer = function(){
+				if(this.data.length <= (this.pointer + 1)){
+
+				} else {
+					this.data.splice(this.pointer + 1)
+				}
+				return this;
+			}
+			this.push = function(val){
+				this.resetDataToCurrentPointer();
+				this.data.push(val)
+				this.pointer = this.data.length - 1;
+				//check max buffer stack
+				if(this.pointer >= HE.stack.maxStackBuffer) {
+					this.data.shift();
+					this.pointer --;
+				}
+				return this;
+			}
+			this.current = function(){
+				return this.data[this.pointer];
+			}
+			this.pop = function(){
+				this.resetDataToCurrentPointer();
+				var data = this.data.pop();
+				this.pointer --;
+				//check min pointer value
+				this.pointer = this.pointer >= -1? this.pointer : -1;
+				return data;
+			}
+			this.hasPrev = function(){
+				return (this.pointer > 0)?true : false;
+			}
+			this.backward = function(){
+				this.pointer --;
+				this.pointer = this.pointer >= -1? this.pointer : -1;
+				return this;
+			}
+			this.hasNext = function(){
+				return (this.pointer < this.data.length - 1)?true : false;
+			}
+			this.forward = function(){
+				this.pointer ++;
+				this.pointer = (this.pointer >= this.data.length)? this.data.length - 1 : this.pointer;
+				return this;
+			}
+			this.reset = function(){
+				this.data = [];
+				this.pointer = -1;
+			}
+			return this;
+		},
+		getInstance: function(stackName){
+			return HE.cache.rememberForever('____stack.' + stackName, function(){
+				return new HE.stack.Stack(stackName);
+			})
+		}
+	}
+	////////////////////////////////// Stack ///////////////////////////////////////
+
+	HE.boxStack = {
+		pushState: function(){
+			HE.stack.getInstance('editingBoxDataStack').push(jQuery.extend(true, {}, HE.boxStack.currentState()));
+			HE.hook.do_action('changedHEState__editedBox')
+		},
+		hasNextState: function(){
+			return HE.stack.getInstance('editingBoxDataStack').hasNext();
+		},
+		nextState: function(){
+			return HE.stack.getInstance('editingBoxDataStack').forward().current();
+		},
+		hasPrevState: function(){
+			return HE.stack.getInstance('editingBoxDataStack').hasPrev();
+		},
+		prevState: function(){
+			return HE.stack.getInstance('editingBoxDataStack').backward().current();
+		},
+		reset: function(){
+			return HE.stack.getInstance('editingBoxDataStack').reset();
+		},
+		currentState: function(){
+			var editingBox = HE.HEState.getState('editingBox', null);
+			var currentState;
+			var lab = HE.boxStack.getCurrentBoxLab();
+			if(lab !== null){
+				currentState = lab.getVal();
+			}
+			return currentState;
+		},
+		getCurrentBoxLab: function(){
+			var editingBox = HE.HEState.getState('editingBox', null);
+			if(editingBox !== null){
+				return window.store.link('boxes.' + editingBox)
+			}
+			return null;
+		}
+	}
 	//////////////////////////////// Hook__Filter //////////////////////////////////
 	HE.hook = {
 		defaultPriority: 10,
@@ -22681,6 +22815,24 @@
 	    ns = lab.joinNs(this.ns, ns);
 	    ns = ns.splice(-1, 1)
 	    return ns.join('.');    
+	  }
+	  this.updateNS = function(val){
+	    var found = HE.utils.resolveValueInData(val, this.data);
+	    if(found !== null){
+	      this.ns = found
+	      return this.ns
+	    } else {
+	      return null
+	    }
+	  }
+	  this.resolveNS = function(val){
+	    var data = this.getVal();
+	    var found = HE.utils.resolveValueInData(val, data);
+	    if(found !== null){
+	      return lab.joinNs(this.ns, found)
+	    } else {
+	      return null
+	    }
 	  }
 	  this.setState = function(key, val){
 	      this.states[key] = val;
@@ -23037,6 +23189,7 @@
 			  },
 			  getLab: function(){
 			  	if(this.lab){
+			  		//check if lab has been changed
 			  		return this.lab;
 			  	} else {
 			  		return null;
@@ -25621,6 +25774,7 @@
 	    if(vRuler.length) {
 	      vRuler.addClass('he-hidden')
 	    }
+	    HE.boxStack.pushState();
 	  },
 	  componentDidMount: function () {
 	    var thisElement = React.findDOMNode(this.refs.block);
@@ -25745,14 +25899,21 @@
 	                      }
 	                }
 	      }
-	      var newBlock = jQuery.extend(true, {}, this.getBlockData(), style);
+	      //get container data pointer
+	      var containerVal = container.getLab().getVal();
 
+	      var newBlock = jQuery.extend(true, {}, this.getBlockData(), style);
+	      pos = container.getLab().quite().push('blocks', newBlock, pos)      
 	      this.getLab().clear();
-	      pos = container.getLab().push('blocks', newBlock, pos)      
-	      
+
+	      //container ns might in valid, do self-update
+	      container.getLab().updateNS(containerVal);
 	      //keep this droppedin block as active
 	      var activeBlock = container.getLab().getFullNS('blocks.' + pos);
 	      container.getLab().setState('activeBlock', activeBlock);
+
+	      //push this current undo step
+	      HE.boxStack.pushState();
 	    }
 	  },
 	  componentDidMount: function () {
@@ -25787,6 +25948,7 @@
 	        event.stopImmediatePropagation();
 	        return false;        
 	      }
+
 	    })
 	  },
 	  getBlockData: function(){
@@ -25862,6 +26024,11 @@
 	    this.forceUpdate();
 	  },
 	  getCachedContentKey: function(){
+	    var labData = this.getLab().getVal();
+	    if(labData === null) {
+	      return '__null';
+	    }
+	    var key;
 	    var key = this.getLab().quite().get('____cachedContentKey');
 	    if(key === undefined || HE.cache.get(key, undefined) === undefined){
 	      key = this.generateCachedContentKey();
@@ -25880,7 +26047,6 @@
 	    return this.contentLifeTime;
 	  },
 	  fetchContent: function(){
-	    var key = this.getCachedContentKey();
 	    var filterName = this.getLab().get('contentAction', null)
 	    var content
 	    if(filterName){
@@ -26179,7 +26345,7 @@
 	            
 	              containerBlocksLab.getVal()?
 	              containerBlocksLab.getVal().map(function(val, key){
-	                if(val.type !== undefined){
+	                if(val && val.type !== undefined){
 	                  var componentName = HE.utils.getComponentByBlockType(val.type, 'Config');
 	                  return React.createElement("div", {"key": key},
 	                          React.createElement(componentName, {"data-lab": containerBlocksLab.link(key)})
@@ -26194,7 +26360,7 @@
 	            
 	              contentBlocksLab.getVal()?
 	              contentBlocksLab.getVal().map(function(val, key){
-	                if(val.type !== undefined){
+	                if(val && val.type !== undefined){
 	                  var componentName = HE.utils.getComponentByBlockType(val.type, 'Config');
 	                  return React.createElement("div", {"key": key},
 	                          React.createElement(componentName, {"data-lab": contentBlocksLab.link(key)})
@@ -26247,7 +26413,7 @@
 	  },
 	  editBox: function(lab){
 	    HE.HEState.setState('editingBox', lab.getShortNS())
-	    HE.cache.set('originalEditingBoxData', jQuery.extend(true, {}, lab.getVal()))
+	    HE.boxStack.pushState();
 	  },
 	  render: function(){
 	    var self = this;
@@ -26312,9 +26478,6 @@
 	  },
 	  getDefaultStyle: function(){
 	    return {width:'auto', height: 'auto', top: '0px', left: '0px'};
-	  },
-	  dropHandler: function(event){
-
 	  },
 	  componentDidMount: function () {
 	    var thisElement = React.findDOMNode(this.refs.block);
@@ -26401,7 +26564,7 @@
 	            
 	              childBlocks.length?
 	              childBlocks.map(function(val, key) {
-	                if(val.type !== undefined){
+	                if(val && val.type !== undefined){
 	                  var componentName = HE.utils.getComponentByBlockType(val.type, 'Edit');
 	                  var childLab = self.getLab().link('blocks.' + key)
 	                  return React.createElement(componentName, {key: key, "data-lab": childLab})
@@ -26442,7 +26605,7 @@
 	            
 	              childBlocks.length?
 	              childBlocks.map(function(val, key) {
-	                if(val.type !== undefined){
+	                if(val && val.type !== undefined){
 	                  var componentName = HE.utils.getComponentByBlockType(val.type, 'View');
 	                  var childLab = self.getLab().link('blocks.' + key)
 	                  return React.createElement(componentName, {key: key, "data-lab": childLab})
@@ -26515,7 +26678,7 @@
 	            
 	              childBlocks.length?
 	              childBlocks.map(function(val, key) {
-	                if(val.type !== undefined){
+	                if(val && val.type !== undefined){
 	                  var componentName = HE.utils.getComponentByBlockType(val.type, 'Edit');
 	                  var childLab = self.getLab().link('blocks.' + key)
 	                  return React.createElement(componentName, {key: key, "data-lab": childLab})
@@ -26562,7 +26725,7 @@
 	            
 	              childBlocks.length?
 	              childBlocks.map(function(val, key) {
-	                if(val.type !== undefined){
+	                if(val && val.type !== undefined){
 	                  var componentName = HE.utils.getComponentByBlockType(val.type, 'View');
 	                  var childLab = self.getLab().link('blocks.' + key)
 	                  return React.createElement(componentName, {key: key, "data-lab": childLab})
@@ -26674,16 +26837,22 @@
 	    }
 	  },
 	  handleDroppedIn: function(container, pos){
-	    var self = this;
-	    if(self.refs.sortableContent){
-	      var blockData = jQuery.extend(true, {}, self.refs.sortableContent.getLab().getVal());
-	      self.refs.sortableContent.getLab().clear();
-	      pos = container.getLab().push('blocks', blockData, pos);
+	    // var self = this;
+	    // if(self.refs.sortableContent){
+	    //   var blockData = jQuery.extend(true, {}, self.refs.sortableContent.getLab().getVal());
+	    //   var containerData = container.getLab().getVal();
+	    //   self.refs.sortableContent.getLab().clear();
+	    //   pos = container.getLab().push('blocks', blockData, pos);
 
-	      //keep this droppedin block as active
-	      var activeBlock = container.getLab().getFullNS('blocks.' + pos);
-	      container.getLab().setState('activeBlock', activeBlock);
-	    }
+	    //   container ns might in valid, do self-update
+	    //   container.getLab().updateNS(containerData);
+
+	    //   //keep this droppedin block as active
+	    //   var activeBlock = container.getLab().getFullNS('blocks.' + pos);
+	    //   container.getLab().setState('activeBlock', activeBlock);
+
+	    //   HE.boxStack.pushState();      
+	    // }
 	  },
 	  dragStart: function(event){
 	    window.he_draggingBlock = this.refs.sortableContent;
@@ -26807,6 +26976,7 @@
 	  },
 	  handleDoubleClick: function(event){
 	    this.getLab().set('style.height', 'auto');
+	    HE.boxStack.pushState();    
 	  },
 	  render: function(){
 	    var childBlocks = this.getLab().get('blocks', []);
@@ -26815,7 +26985,7 @@
 	            
 	              childBlocks.length?
 	              childBlocks.map(function(val, key) {
-	                if(val.type !== undefined){
+	                if(val && val.type !== undefined){
 	                  var componentName = HE.utils.getComponentByBlockType(val.type, 'Edit');
 	                  var childLab = self.getLab().link('blocks.' + key)
 	                  return React.createElement(HEUI.Container.Sortable.Edit, {key: key, "data-container": self},
@@ -26850,9 +27020,6 @@
 	  getDefaultStyle: function(){
 	    return {width:'60px', height: '60px', top: '0px', left: '0px'};
 	  },
-	  dropHandler: function(event){
-
-	  },
 	  componentDidMount: function () {
 	    var thisElement = React.findDOMNode(this.refs.block);
 	    var self = this;
@@ -26864,7 +27031,7 @@
 	            
 	              childBlocks.length?
 	              childBlocks.map(function(val, key) {
-	                if(val.type !== undefined){
+	                if(val && val.type !== undefined){
 	                  var componentName = HE.utils.getComponentByBlockType(val.type, 'View');
 	                  var childLab = self.getLab().link('blocks.' + key)
 	                  return React.createElement(HEUI.Container.Sortable.View, {key: key, "data-container": self},
@@ -26922,15 +27089,13 @@
 	  getDefaultStyle: function(){
 	    return {width:'60px', height: '60px', top: '0px', left: '0px'};
 	  },
-	  dropHandler: function(event){
-
-	  },
 	  componentDidMount: function () {
 	    var thisElement = React.findDOMNode(this.refs.block);
 	    var self = this;
 	  },
 	  handleDoubleClick: function(event){
 	    this.getLab().set('style.height', 'auto');
+	    HE.boxStack.pushState();
 	  },
 	  render: function(){
 	    var childBlocks = this.getLab().get('blocks', []);
@@ -26939,7 +27104,7 @@
 	            
 	              childBlocks.length?
 	              childBlocks.map(function(val, key) {
-	                if(val.type !== undefined){
+	                if(val && val.type !== undefined){
 	                  var componentName = HE.utils.getComponentByBlockType(val.type, 'Edit');
 	                  var childLab = self.getLab().link('blocks.' + key)
 	                  return React.createElement(HEUI.Container.Sortable.Edit, {key: key, "data-container": self},
@@ -26974,9 +27139,6 @@
 	  getDefaultStyle: function(){
 	    return {width:'60px', height: '60px', top: '0px', left: '0px'};
 	  },
-	  dropHandler: function(event){
-
-	  },
 	  componentDidMount: function () {
 	    var thisElement = React.findDOMNode(this.refs.block);
 	    var self = this;
@@ -26988,7 +27150,7 @@
 	            
 	              childBlocks.length?
 	              childBlocks.map(function(val, key) {
-	                if(val.type !== undefined){
+	                if(val && val.type !== undefined){
 	                  var componentName = HE.utils.getComponentByBlockType(val.type, 'View');
 	                  var childLab = self.getLab().link('blocks.' + key)
 	                  return React.createElement(HEUI.Container.Sortable.View, {key: key, "data-container": self},

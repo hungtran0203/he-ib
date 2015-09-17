@@ -20,6 +20,24 @@ function LAB(ns, data, binder, pagingCollection, states){
     ns = ns.splice(-1, 1)
     return ns.join('.');    
   }
+  this.updateNS = function(val){
+    var found = HE.utils.resolveValueInData(val, this.data);
+    if(found !== null){
+      this.ns = found
+      return this.ns
+    } else {
+      return null
+    }
+  }
+  this.resolveNS = function(val){
+    var data = this.getVal();
+    var found = HE.utils.resolveValueInData(val, data);
+    if(found !== null){
+      return lab.joinNs(this.ns, found)
+    } else {
+      return null
+    }
+  }
   this.setState = function(key, val){
       this.states[key] = val;
       //refresh data on change state

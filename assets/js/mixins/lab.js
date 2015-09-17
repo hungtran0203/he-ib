@@ -24,6 +24,7 @@ var labMixins = {
 		  },
 		  getLab: function(){
 		  	if(this.lab){
+		  		//check if lab has been changed
 		  		return this.lab;
 		  	} else {
 		  		return null;

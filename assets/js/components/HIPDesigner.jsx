@@ -74,6 +74,7 @@ var App = React.createClass({
 			//on HEState change bindings
 			self.bindHEState('editingBox');
 			self.bindHEState('selectedBox');
+			self.bindHEState('editedBox');
 
 
 			return {'redraw': true};
@@ -111,9 +112,8 @@ var App = React.createClass({
 		},
 		handleClearButtonClick: function(event){
 			var editingBox = HE.HEState.getState('editingBox', null);
-			var originalData = HE.cache.get('originalEditingBoxData', null);
-			if(editingBox!== null && originalData){
-				this.getLab().set('boxes.' + editingBox, jQuery.extend(true, {}, {title: originalData.title?originalData.title:'New Box'}))
+			if(editingBox!== null){
+				this.getLab().set('boxes.' + editingBox, jQuery.extend(true, {}, {title: 'New Box'}))
 			}
 			// localStorage.removeItem('heStore');
 			// this.loadIBLab();
@@ -121,17 +121,29 @@ var App = React.createClass({
 			// this.refs.edit.setLab(this.store.link('heStore'))
 			// this.forceUpdate();
 		},
+		handleUndoButtonClick: function(event){
+			var undoState = jQuery.extend(true, {}, HE.boxStack.prevState());
+			HE.boxStack.getCurrentBoxLab().quite().setVal(undoState);
+			this.forceUpdate();
+		},
+		handleRedoButtonClick: function(event){
+			var redoState = jQuery.extend(true, {}, HE.boxStack.nextState());
+			HE.boxStack.getCurrentBoxLab().quite().setVal(redoState);
+			this.forceUpdate();
+		},
 		handleDoneButtonClick: function(event){
 			this.handleSaveButtonClick(event);
 			HE.HEState.clearState('editingBox');
+			HE.boxStack.reset();
 			this.forceUpdate();
 		},
 		handleDiscardButtonClick: function(event){
-			var originalData = HE.cache.get('originalEditingBoxData', null);
-			var editingBox = HE.HEState.getState('editingBox', null);
-			if(editingBox!== null && originalData){
-				this.getLab().set('boxes.' + editingBox, jQuery.extend(true, {}, originalData))
-			}
+			var undoState;
+			do {
+				undoState = HE.boxStack.prevState();	
+			} while(HE.boxStack.hasPrevState())
+			HE.boxStack.getCurrentBoxLab().quite().setVal(undoState);
+			this.forceUpdate();			
 		},
 		getEditingBox: function(){
 			return HE.HEState.getState('editingBox', null);
@@ -179,7 +191,9 @@ var App = React.createClass({
 		  				<button onClick={this.handleSaveButtonClick}>Save</button>
 		  				<button onClick={this.handleClearButtonClick}>Clear</button>
 		  				<button onClick={this.handleDoneButtonClick}>Done</button>
-		  				<button onClick={this.handleDiscardButtonClick}>Discard Changes</button>
+		  				<button disabled={!HE.boxStack.hasPrevState()} onClick={this.handleUndoButtonClick}>Undo</button>
+	  					<button disabled={!HE.boxStack.hasNextState()} onClick={this.handleRedoButtonClick}>Redo</button>
+		  				<button disabled={!HE.boxStack.hasPrevState()} onClick={this.handleDiscardButtonClick}>Discard</button>
 		  			</div>
       			<div>Box: {editingBoxLab.get('title')}</div>
 		  			<div className="he-DesignViewPort">

@@ -81,6 +81,7 @@ var resizeableMixins = {
     if(vRuler.length) {
       vRuler.addClass('he-hidden')
     }
+    HE.boxStack.pushState();
   },
   componentDidMount: function () {
     var thisElement = React.findDOMNode(this.refs.block);
@@ -205,14 +206,21 @@ var draggableMixins = {
                       }
                 }
       }
-      var newBlock = jQuery.extend(true, {}, this.getBlockData(), style);
+      //get container data pointer
+      var containerVal = container.getLab().getVal();
 
+      var newBlock = jQuery.extend(true, {}, this.getBlockData(), style);
+      pos = container.getLab().quite().push('blocks', newBlock, pos)      
       this.getLab().clear();
-      pos = container.getLab().push('blocks', newBlock, pos)      
-      
+
+      //container ns might in valid, do self-update
+      container.getLab().updateNS(containerVal);
       //keep this droppedin block as active
       var activeBlock = container.getLab().getFullNS('blocks.' + pos);
       container.getLab().setState('activeBlock', activeBlock);
+
+      //push this current undo step
+      HE.boxStack.pushState();
     }
   },
   componentDidMount: function () {
@@ -247,6 +255,7 @@ var draggableMixins = {
         event.stopImmediatePropagation();
         return false;        
       }
+
     })
   },
   getBlockData: function(){
@@ -322,6 +331,11 @@ var blockContentMixins = {
     this.forceUpdate();
   },
   getCachedContentKey: function(){
+    var labData = this.getLab().getVal();
+    if(labData === null) {
+      return '__null';
+    }
+    var key;
     var key = this.getLab().quite().get('____cachedContentKey');
     if(key === undefined || HE.cache.get(key, undefined) === undefined){
       key = this.generateCachedContentKey();
@@ -340,7 +354,6 @@ var blockContentMixins = {
     return this.contentLifeTime;
   },
   fetchContent: function(){
-    var key = this.getCachedContentKey();
     var filterName = this.getLab().get('contentAction', null)
     var content
     if(filterName){
@@ -639,7 +652,7 @@ HEUI.ConfigList = React.createClass({
             {
               containerBlocksLab.getVal()?
               containerBlocksLab.getVal().map(function(val, key){
-                if(val.type !== undefined){
+                if(val && val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'Config');
                   return React.createElement("div", {"key": key},
                           React.createElement(componentName, {"data-lab": containerBlocksLab.link(key)})
@@ -654,7 +667,7 @@ HEUI.ConfigList = React.createClass({
             {
               contentBlocksLab.getVal()?
               contentBlocksLab.getVal().map(function(val, key){
-                if(val.type !== undefined){
+                if(val && val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'Config');
                   return React.createElement("div", {"key": key},
                           React.createElement(componentName, {"data-lab": contentBlocksLab.link(key)})
@@ -707,7 +720,7 @@ HEUI.BoxList = React.createClass({
   },
   editBox: function(lab){
     HE.HEState.setState('editingBox', lab.getShortNS())
-    HE.cache.set('originalEditingBoxData', jQuery.extend(true, {}, lab.getVal()))
+    HE.boxStack.pushState();
   },
   render: function(){
     var self = this;
@@ -772,9 +785,6 @@ HEUI.Content.Edit = React.createClass({
   },
   getDefaultStyle: function(){
     return {width:'auto', height: 'auto', top: '0px', left: '0px'};
-  },
-  dropHandler: function(event){
-
   },
   componentDidMount: function () {
     var thisElement = React.findDOMNode(this.refs.block);
@@ -861,7 +871,7 @@ HEUI.Box.Edit = React.createClass({
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {
-                if(val.type !== undefined){
+                if(val && val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'Edit');
                   var childLab = self.getLab().link('blocks.' + key)
                   return React.createElement(componentName, {key: key, "data-lab": childLab})
@@ -902,7 +912,7 @@ HEUI.Box.View = React.createClass({
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {
-                if(val.type !== undefined){
+                if(val && val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'View');
                   var childLab = self.getLab().link('blocks.' + key)
                   return React.createElement(componentName, {key: key, "data-lab": childLab})
@@ -975,7 +985,7 @@ HEUI.Container.Absolute.Edit = React.createClass({
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {
-                if(val.type !== undefined){
+                if(val && val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'Edit');
                   var childLab = self.getLab().link('blocks.' + key)
                   return React.createElement(componentName, {key: key, "data-lab": childLab})
@@ -1022,7 +1032,7 @@ HEUI.Container.Absolute.View = React.createClass({
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {
-                if(val.type !== undefined){
+                if(val && val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'View');
                   var childLab = self.getLab().link('blocks.' + key)
                   return React.createElement(componentName, {key: key, "data-lab": childLab})
@@ -1134,16 +1144,22 @@ HEUI.Container.Sortable.Edit = React.createClass({
     }
   },
   handleDroppedIn: function(container, pos){
-    var self = this;
-    if(self.refs.sortableContent){
-      var blockData = jQuery.extend(true, {}, self.refs.sortableContent.getLab().getVal());
-      self.refs.sortableContent.getLab().clear();
-      pos = container.getLab().push('blocks', blockData, pos);
+    // var self = this;
+    // if(self.refs.sortableContent){
+    //   var blockData = jQuery.extend(true, {}, self.refs.sortableContent.getLab().getVal());
+    //   var containerData = container.getLab().getVal();
+    //   self.refs.sortableContent.getLab().clear();
+    //   pos = container.getLab().push('blocks', blockData, pos);
 
-      //keep this droppedin block as active
-      var activeBlock = container.getLab().getFullNS('blocks.' + pos);
-      container.getLab().setState('activeBlock', activeBlock);
-    }
+    //   container ns might in valid, do self-update
+    //   container.getLab().updateNS(containerData);
+
+    //   //keep this droppedin block as active
+    //   var activeBlock = container.getLab().getFullNS('blocks.' + pos);
+    //   container.getLab().setState('activeBlock', activeBlock);
+
+    //   HE.boxStack.pushState();      
+    // }
   },
   dragStart: function(event){
     window.he_draggingBlock = this.refs.sortableContent;
@@ -1267,6 +1283,7 @@ HEUI.Container.Vertical.Edit = React.createClass({
   },
   handleDoubleClick: function(event){
     this.getLab().set('style.height', 'auto');
+    HE.boxStack.pushState();    
   },
   render: function(){
     var childBlocks = this.getLab().get('blocks', []);
@@ -1275,7 +1292,7 @@ HEUI.Container.Vertical.Edit = React.createClass({
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {
-                if(val.type !== undefined){
+                if(val && val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'Edit');
                   var childLab = self.getLab().link('blocks.' + key)
                   return React.createElement(HEUI.Container.Sortable.Edit, {key: key, "data-container": self},
@@ -1310,9 +1327,6 @@ HEUI.Container.Vertical.View = React.createClass({
   getDefaultStyle: function(){
     return {width:'60px', height: '60px', top: '0px', left: '0px'};
   },
-  dropHandler: function(event){
-
-  },
   componentDidMount: function () {
     var thisElement = React.findDOMNode(this.refs.block);
     var self = this;
@@ -1324,7 +1338,7 @@ HEUI.Container.Vertical.View = React.createClass({
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {
-                if(val.type !== undefined){
+                if(val && val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'View');
                   var childLab = self.getLab().link('blocks.' + key)
                   return React.createElement(HEUI.Container.Sortable.View, {key: key, "data-container": self},
@@ -1382,15 +1396,13 @@ HEUI.Container.Horizontal.Edit = React.createClass({
   getDefaultStyle: function(){
     return {width:'60px', height: '60px', top: '0px', left: '0px'};
   },
-  dropHandler: function(event){
-
-  },
   componentDidMount: function () {
     var thisElement = React.findDOMNode(this.refs.block);
     var self = this;
   },
   handleDoubleClick: function(event){
     this.getLab().set('style.height', 'auto');
+    HE.boxStack.pushState();
   },
   render: function(){
     var childBlocks = this.getLab().get('blocks', []);
@@ -1399,7 +1411,7 @@ HEUI.Container.Horizontal.Edit = React.createClass({
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {
-                if(val.type !== undefined){
+                if(val && val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'Edit');
                   var childLab = self.getLab().link('blocks.' + key)
                   return React.createElement(HEUI.Container.Sortable.Edit, {key: key, "data-container": self},
@@ -1434,9 +1446,6 @@ HEUI.Container.Horizontal.View = React.createClass({
   getDefaultStyle: function(){
     return {width:'60px', height: '60px', top: '0px', left: '0px'};
   },
-  dropHandler: function(event){
-
-  },
   componentDidMount: function () {
     var thisElement = React.findDOMNode(this.refs.block);
     var self = this;
@@ -1448,7 +1457,7 @@ HEUI.Container.Horizontal.View = React.createClass({
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {
-                if(val.type !== undefined){
+                if(val && val.type !== undefined){
                   var componentName = HE.utils.getComponentByBlockType(val.type, 'View');
                   var childLab = self.getLab().link('blocks.' + key)
                   return React.createElement(HEUI.Container.Sortable.View, {key: key, "data-container": self},
