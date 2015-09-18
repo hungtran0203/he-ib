@@ -68,6 +68,18 @@ class HEIBApp {
 		}
 		$this->apiHooks();
 		$this->commonHooks();
+
+		$this->ajaxHooks();
+	}
+
+	private function ajaxHooks(){
+
+		add_action( 'wp_ajax_heib_ajax', 'HEIBApp::ajaxProcess' );
+		add_action( 'wp_ajax_nopriv_heib_ajax', 'HEIBApp::ajaxProcess' );
+
+		function prefix_ajax_add_foobar() {
+			// Handle request then generate response using WP_Ajax_Response
+		}
 	}
 
 	private function adminHooks(){
@@ -81,7 +93,8 @@ class HEIBApp {
 	}
 
 	private function apiHooks(){
-	
+		add_filter('heib_process_endpoint__boxes.set', 'HEIBEndpoint::setBoxes');
+		add_filter('heib_process_endpoint__boxes.get', 'HEIBEndpoint::getBoxes');
 	}
 	
 	private function commonHooks(){
@@ -112,14 +125,71 @@ class HEIBApp {
 	
 	public static function admin_enqueue_scripts(){
 		wp_enqueue_script( 'heibadmin', plugins_url( '/dist/bundle.js' , __FILE__ ), array( 'jquery' ));
+		wp_enqueue_script( 'heibadmin_config', plugins_url( '/assets/js/config.js' , __FILE__ ), array( 'heibadmin' ));
 	}
 	
 	public static function admin_content(){
 		echo '<div id="heib_wrapper"></div>';
 	}
 
+	public static function ajaxProcess(){
+		$res = new HEIBResponse();
+		$res = HEIBApp::processEndpoint($res);
+		echo $res->toJson();
+		exit;
+	}
+
+	public static function processEndpoint($res){
+		$query = $res->query();
+		if(!$query['endpoint']){
+			$res->error = 1;
+			$res->errMsg = 'No endpoints are provided';
+		} else {
+			$res = apply_filters('heib_process_endpoint__' . $query['endpoint'],  $res);
+		}
+		return $res;
+	}
+
 	/****************************************** End hook call back function ***************************************/
 	
+}
+
+class HEIBEndpoint {
+	public static function setBoxes($res){
+		//sanity box data
+		$query = $res->query();
+		$boxes = $query['value'];
+		if(!$boxes){
+			$res->error = 2;
+			$res->errMsg = 'No data provided';
+		} else {
+			update_option('heib_boxes_data', $boxes);
+		}
+		return $res;
+	}
+
+	public static function getBoxes($res){
+		$res->data = get_option('heib_boxes_data');
+		return $res;
+	}	
+}
+
+class HEIBResponse extends stdClass {
+	protected $query;
+
+	public function __construct($query = null){
+		if(is_null($query)){
+			$query = $_REQUEST;
+		}
+		$this->query = $query;
+		// parent::__construct();
+	}
+	public function query(){
+		return $this->query;
+	}
+	public function toJson(){
+		return json_encode($this);
+	}
 }
 
 $GLOBALS['heib'] = HEIBApp::getInstance();

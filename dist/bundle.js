@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "b50b19c4aac238c35463"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "78c81184e543bd9c4bd2"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -969,13 +969,20 @@
 		  	}
 		  },
 		  loadIBLab: function(){
-				var storeDataStr = localStorage.getItem('heStore', null);
-				if(storeDataStr){
-					window.store = HE.lab.init(jQuery.parseJSON(storeDataStr));
-				} else {
-					window.store = HE.lab.init({boxes: []});
-				}
+		  	var self = this
+				// var storeDataStr = localStorage.getItem('heStore', null);
+				var storeDataStr = null;
+				window.store = HE.lab.init({boxes: []});
+				//get boxes data
 
+				HE.storage.get('boxes', null, function(res){
+					if(res && res.boxes){
+						window.store.quite().set('boxes', res.boxes);
+						HE.HEState.setState('selectedBox', 0)					
+					}
+				})
+
+				//load box from server
 				var configBlockData = {containerBlocks: [],
 																contentBlocks: []
 															};
@@ -992,7 +999,8 @@
 				this.configBlocks = window.configBlocks;
 		  },
 			handleSaveButtonClick: function(event){
-				localStorage.setItem('heStore', JSON.stringify(this.store.getVal()));
+				HE.storage.set('boxes', this.lab.getVal(), null, function(res){})
+
 			},
 			handleClearButtonClick: function(event){
 				var editingBox = HE.HEState.getState('editingBox', null);
@@ -22284,6 +22292,7 @@
 	HE.init = function(){
 		HE.UI.init();
 		HE.hook.init();
+		jQuery(document).trigger('he_inited');
 	}
 
 	HE.lab = __webpack_require__(167);
@@ -22399,11 +22408,30 @@
 			return HE.utils.currentTabIndex ++;
 		},
 		ajax: function(params, successCb, failCb){
+			var data = jQuery.extend(true, {}, {'action': 'heib_ajax'}, params)
 			//setup midleware hook
-			setTimeout(function(){
-				var resp = {data:'<span>this is my data</span>'}
-				successCb(resp)
-			}, 100);
+			jQuery.ajax({
+	        url: ajaxurl,
+	        data: data,
+	        success:function(data) {
+	            // This outputs the result of the ajax request
+	            var res = jQuery.parseJSON(data);
+	            if(res.error){
+	            	console.log(res.errMsg);
+	            	failCb(res)
+	            } else {
+	            	if(typeof successCb === 'function'){
+		            	successCb(res);
+	            	}
+	            }
+	        },
+	        error: function(errorThrown){
+	            console.log(errorThrown);
+	          	if(typeof failCb === 'function'){
+		            failCb();
+	          	}
+	        }
+	    });  
 		},
 		nextTick: function(fn){
 			setTimeout(fn, 10);
@@ -22760,6 +22788,80 @@
 		}
 	}	
 	//////////////////////////////// Hook__Filter //////////////////////////////////	
+
+	////////////////////////////////// Storage /////////////////////////////////////
+	HE.storage = {
+		storageType: null,
+		defaultStorageType: 'local',
+		handlers: {},
+		get: function(endpoint, params, passCb, failCb, storageType){
+			handler = HE.storage.getHandler(storageType);
+			return handler.getData(endpoint, params, passCb, failCb);
+		},
+		set: function(endpoint, val, params, passCb, failCb, storageType){
+			handler = HE.storage.getHandler(storageType);
+			return handler.setData(endpoint, val, params, passCb, failCb);
+		},
+		setStorageType: function(storageType){
+			HE.storage.storageType = storageType;
+		},
+		getHandler: function(storageType){
+			storageType = storageType || HE.storage.storageType || HE.storage.defaultStorageType
+			if(!HE.storage.handlers[storageType]){
+				HE.hook.do_action('getStorage__' + storageType);
+			}
+			return HE.storage.handlers[storageType];
+		},
+		setHandler: function(storageType, handler){
+			HE.storage.handlers[storageType] = handler;
+		}
+	}
+
+	var localStorageHandler = function(){
+		this.getData = function(endpoint, params, passCb, failCb){
+			var data = localStorage.getItem(endpoint);
+			if(typeof passCb === 'function') {
+				passCb(jQuery.parseJSON(data));
+			}
+		}
+		this.setData = function(endpoint, val, params, passCb, failCb){
+			var data = localStorage.setItem(endpoint, JSON.stringify(val));
+			if(typeof passCb === 'function') {
+				passCb(data);
+			}
+		}
+		return this;
+	}
+
+	var ajaxStorageHandler = function(){
+		this.getData = function(endpoint, params, passCb, failCb){
+			HE.utils.ajax(jQuery.extend(true, {}, params, {endpoint:endpoint + '.get'}), function(res){
+				if(typeof passCb === 'function') {
+					passCb(res.data);
+				}
+			}, failCb);
+		}
+		this.setData = function(endpoint, val, params, passCb, failCb){
+			HE.utils.ajax(jQuery.extend(true, {}, params, {endpoint:endpoint + '.set', value: val}), function(res){
+				if(typeof passCb === 'function') {
+					passCb(res.data);
+				}
+			}, failCb);
+		}
+		return this;
+	}
+
+	//action hook to return local storage
+	HE.hook.add_action('getStorage__local', function(){
+		handler = new localStorageHandler();
+		HE.storage.setHandler('local', handler);
+	})
+	//action hook to return ajax storage
+	HE.hook.add_action('getStorage__ajax', function(){
+		handler = new ajaxStorageHandler();
+		HE.storage.setHandler('ajax', handler);
+	})
+	////////////////////////////////// Storage /////////////////////////////////////
 
 	//////////////////////////////// HEState //////////////////////////////////
 	HE.HEState = {

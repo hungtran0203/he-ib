@@ -85,13 +85,20 @@ var HEIBApp = React.createClass({
 	  	}
 	  },
 	  loadIBLab: function(){
-			var storeDataStr = localStorage.getItem('heStore', null);
-			if(storeDataStr){
-				window.store = HE.lab.init(jQuery.parseJSON(storeDataStr));
-			} else {
-				window.store = HE.lab.init({boxes: []});
-			}
+	  	var self = this
+			// var storeDataStr = localStorage.getItem('heStore', null);
+			var storeDataStr = null;
+			window.store = HE.lab.init({boxes: []});
+			//get boxes data
 
+			HE.storage.get('boxes', null, function(res){
+				if(res && res.boxes){
+					window.store.quite().set('boxes', res.boxes);
+					HE.HEState.setState('selectedBox', 0)					
+				}
+			})
+
+			//load box from server
 			var configBlockData = {containerBlocks: [],
 															contentBlocks: []
 														};
@@ -108,7 +115,8 @@ var HEIBApp = React.createClass({
 			this.configBlocks = window.configBlocks;
 	  },
 		handleSaveButtonClick: function(event){
-			localStorage.setItem('heStore', JSON.stringify(this.store.getVal()));
+			HE.storage.set('boxes', this.lab.getVal(), null, function(res){})
+
 		},
 		handleClearButtonClick: function(event){
 			var editingBox = HE.HEState.getState('editingBox', null);
