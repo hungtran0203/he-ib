@@ -715,8 +715,24 @@ HEUI.BoxList = React.createClass({
   removeBox: function(lab){
     lab.clear('');
   },
-  addBox: function(event){
-    this.getLab().push('', {title:'New Box', name:'box', type:'box', style:{width:'300px', height:'300px'}, blocks:[]})
+  newBox: function(event){
+    jQuery(React.findDOMNode(this.refs.newBoxForm)).removeClass('he-hidden');
+    jQuery(React.findDOMNode(this.refs.newBoxActions)).addClass('he-hidden');
+  },
+  addBox: function(){
+    var title = jQuery(React.findDOMNode(this.refs.newBoxTitle)).find('input').val();
+    var name = jQuery(React.findDOMNode(this.refs.newBoxName)).find('select').val();
+
+    var newBox = this.getLab().push('', {title:title, name:name, type:'box', style:{width:'300px', height:'300px'}, blocks:[]})
+    HE.HEState.setState('selectedBox', newBox)
+    this.setState({selectedBox:newBox})
+
+    jQuery(React.findDOMNode(this.refs.newBoxForm)).addClass('he-hidden');
+    jQuery(React.findDOMNode(this.refs.newBoxActions)).removeClass('he-hidden');
+  },
+  cancelBox: function(){
+    jQuery(React.findDOMNode(this.refs.newBoxForm)).addClass('he-hidden');
+    jQuery(React.findDOMNode(this.refs.newBoxActions)).removeClass('he-hidden');
   },
   editBox: function(lab){
     HE.HEState.setState('editingBox', lab.getShortNS())
@@ -730,11 +746,22 @@ HEUI.BoxList = React.createClass({
               {self.getBox(self.getLab().link(key))}
             </div>
     });
+    var newBoxOptions = [{value:'user', title:'User Box'},{value:'post', title:'Post Box'},{value:'category', title:'Category Box'}]
     return <div className="he-BoxList" ref="block">
             <div className="__List">
             {boxesList}
-            <div>
-              <button onClick={this.addBox}>New Box</button>
+            <div className="he-NewBoxForm">
+              <div className="__Title" ref="newBoxActions">
+                <button onClick={this.newBox}>New Box</button>
+              </div>
+              <div className="he-hidden __Body" ref="newBoxForm">
+                <HE.UI.components.Form.Text name="title" title="Box Title" defaultValue="New Box" ref="newBoxTitle">
+                </HE.UI.components.Form.Text>
+                <HE.UI.components.Form.Select name="name" title="Box Name" data-options={newBoxOptions} ref="newBoxName">
+                </HE.UI.components.Form.Select>
+                <button onClick={this.addBox}>Add</button>
+                <button onClick={this.cancelBox}>Cancel</button>
+              </div>              
             </div>
             </div>
           </div>;

@@ -288,6 +288,15 @@ $he-panel-bg: #FFFFFF;
 	}
 }
 
+.he-NewBoxForm {
+	margin-top: 10px;
+	.__Body {
+		background: #ffffff;
+		border: 1px solid whitesmoke;
+		padding: 5px;
+	}
+}
+
 .he-dropActive {
 	.he-SortableBlock {
 		&.__Placeholder {

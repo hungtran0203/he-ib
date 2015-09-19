@@ -40,6 +40,29 @@ HEForm.TextArea = React.createClass({
 })
 ///////////////////////////////////// Form.TextArea /////////////////////////////////////////
 
+///////////////////////////////////// Form.Select /////////////////////////////////////////
+HEForm.Select = React.createClass({
+  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.input],
+  render: function(){
+    var options = this.props['data-options']
+    return (
+      options && options.length?
+      <div className="form-group">
+        {this.hasTitle()?<label>{this.getTitle()}</label>:''}
+        <select {...this.except(['className', 'value', 'title', 'data-lab'])} className={this.getClass('form-control')} valueLink={this.getValueLink()}  ref="input">
+          {
+            options.map(function(val, key){
+              return (<option key={key} value={val.value}>{val.title?val.title:val.value}</option>)
+            })
+          }
+        </select>        
+      </div>
+      :null
+    );
+  }
+})
+///////////////////////////////////// Form.Select /////////////////////////////////////////
+
 ///////////////////////////////////// Form.Label /////////////////////////////////////////
 HEForm.Label = React.createClass({
   mixins: [HE.UI.mixins.common, HE.UI.mixins.input, React.addons.LinkedStateMixin],
