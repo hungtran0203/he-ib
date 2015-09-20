@@ -6,7 +6,10 @@ var HE = require('../lib/he.js');
 
 HE.init();
 
-HE.hook.add_filter('get_config_block_data', function(configBlockData){
+///////////////////////////////////////// begin define hooks ///////////////////////////////////////////
+
+/* default blocks */
+HE.hook.add_filter('getListConfigBlocks', function(configBlockData){
 	//load absolute container
 	configBlockData.containerBlocks.push({type:'container.absolute', name:'container_absolute', title:'Absolute Container'})
 	//load vertical container
@@ -44,20 +47,59 @@ HE.hook.add_filter('get_config_block_data', function(configBlockData){
 		attrBlock.getLab().clear('____cachedContentKey');	//clear key to force update content
 	})
 
-	//load image content block
-	configBlockData.contentBlocks.push({	type:'content', name:'image', title:'Image', contentFilter: 'image',
+
+	//setup shortcode block
+	configBlockData.contentBlocks.push({	type:'content', name:'shortcode', title:'Shortcode', contentAction: 'shortcode',
 																				options: {
-																					'image': {
-																						componentName:'HE.UI.components.Form.TextArea',
+																					'shortcode': {
+																						componentName:'HE.UI.components.Form.Shortcode',
 																						value:'',
-																						title:'Image URL',
-																						name:'image'
+																						title:'Shortcode',
 																					}
 																				}
 																			}
 																		);
+	//add action to display html block content
+	HE.hook.add_filter('fetchBlockContent__shortcode', function(content, block){
+		var shortcode = block.getLab().quite().get('options.shortcode.value');
+		HE.storage.get('shortcode', {shortcode:shortcode}, function(res){
+			var content = sanitizeShortcodeContent(res);
+			block.setContent(content);
+		})
+		return 'Loading ...';
+	})
+	function sanitizeShortcodeContent(content){
+		if(content == ''){
+			//empty content, just give hint text
+			content = '<span class="_Hint"><a href="javascript:void(0)" onclick="HE.utils.focusInput(\'option.html\');">Edit Content</a></span>'
+		}
+		return content;
+	}
+	//add action on update html block attributes
+	HE.hook.add_action('updateBlockAttribute__shortcode', function(attrBlock){
+		attrBlock.getLab().clear('____cachedContentKey');	//clear key to force update content
+	})
+
+
 	return configBlockData;
 })
+
+/* user blocks */
+HE.hook.add_filter('getListConfigBlocks__user', function(configBlockData){
+	return configBlockData;
+})
+
+/* post blocks */
+HE.hook.add_filter('getListConfigBlocks__post', function(configBlockData){
+	return configBlockData;
+})
+
+/* category blocks */
+HE.hook.add_filter('getListConfigBlocks__category', function(configBlockData){
+	return configBlockData;
+})
+
+///////////////////////////////////////// end define hooks ///////////////////////////////////////////
 var HEIBApp = React.createClass({
 		mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive],
 		getInitialState: function() {
@@ -99,12 +141,7 @@ var HEIBApp = React.createClass({
 			})
 
 			//load box from server
-			var configBlockData = {containerBlocks: [],
-															contentBlocks: []
-														};
-
-			configBlockData = HE.hook.apply_filters('get_config_block_data', configBlockData)
-			window.configBlocks = HE.lab.init(configBlockData);
+			window.configBlocks = this.getListConfigBlocks();
 
 			window.HEState = HE.lab.init({});
 
@@ -162,11 +199,37 @@ var HEIBApp = React.createClass({
 		getBoxLab: function(index){
 			return this.store.link('boxes.' + index);
 		},
+		getListConfigBlocks: function(){
+			//default hook
+			var filterName = 'getListConfigBlocks';
+			var configBlocks = {containerBlocks: [],
+															contentBlocks: []
+													};
+			configBlocks = HE.hook.apply_filters(filterName, configBlocks);
+
+			//selected box name hook
+			var activeBoxName
+			var selectedBox = this.getSelectedBox();
+			if(selectedBox !== null){
+				activeBoxName = this.store.get('boxes.' + this.getSelectedBox() + '.name')
+				if(activeBoxName !== undefined){
+					configBlocks = HE.hook.apply_filters(filterName + '__' + activeBoxName, configBlocks);
+				}
+			}
+
+			//init or update
+			if(this.configBlocks){
+				this.configBlocks.set('', configBlocks);
+			} else {
+				this.configBlocks = HE.lab.init(configBlocks);
+			}
+			return this.configBlocks;
+		},
 		getLeftColumn:function(){
     	if(this.getEditingBox() === null) {
 	    	return <HE.UI.components.Block.BoxList data-lab={this.store.link('boxes')} ref="config"></HE.UI.components.Block.BoxList>  
     	} else {
-    		return  <HE.UI.components.Block.ConfigList data-lab={this.configBlocks} ref="config"></HE.UI.components.Block.ConfigList>
+    		return  <HE.UI.components.Block.ConfigList data-lab={this.getListConfigBlocks()} ref="config"></HE.UI.components.Block.ConfigList>
     	}
 		},
 		getMiddleColumn: function(){

@@ -32,7 +32,7 @@ HEForm.TextArea = React.createClass({
   render: function(){
     return (
       <div className="form-group">
-        {this.hasTitle()?<label>{this.getTitle()}</label>:''}
+        {this.hasTitle()?<div className="form-label">{this.getTitle()}</div>:''}
         <textarea {...this.except(['className', 'value'])} className={this.getClass('form-control')} type="text" valueLink={this.getValueLink()} ref="input"/>
       </div>
     );
@@ -86,5 +86,79 @@ HEForm.Submit = React.createClass({
   }
 })
 ///////////////////////////////////// Form.Submit /////////////////////////////////////////
+
+///////////////////////////////////// Form.Shortcode /////////////////////////////////////////
+HEForm.Shortcode = React.createClass({
+  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.input],
+  getShortcodeOptions: function(){
+    var self = this;
+    if(self.shortcodeOptions === undefined){
+      HE.storage.get('shortcodes', null, function(data){
+        var options;
+        if(Array.isArray(data)){
+          options = data;
+        } else {
+          options = null;
+        }
+        self.setShortcodeOptions(options);
+      });
+      return [];
+    }
+    return this.shortcodeOptions;
+  },
+  setShortcodeOptions: function(options){
+    this.shortcodeOptions = options;
+    this.forceUpdate();
+  },
+  changeShortcode: function(event){
+    var shortcode = event.target.value;
+    this.setValue(this.getValue() + shortcode);
+    if(this.props.onChangeCapture){
+      this.props.onChangeCapture()  
+    }
+  },
+  render: function(){
+    //get list of available shortcodes
+    var shortcodeOptions = this.getShortcodeOptions();
+    if(shortcodeOptions === null){
+      return null;
+    } else if(Array.isArray(shortcodeOptions) && shortcodeOptions.length) {
+      var val = this.getValue();
+      var editorClass = '';
+      if(val === ''){
+        editorClass = ' he-hidden';
+      }
+      return (
+        <div className="form-group">
+          {this.hasTitle()?<div className="form-label">{this.getTitle()}</div>:''}
+          <textarea {...this.except(['className', 'value'])} className={this.getClass('form-control' + editorClass)} type="text" valueLink={this.getValueLink()} ref="input"/>
+          {
+          shortcodeOptions.length?
+            <select className={this.getClass('form-control')} onChange={this.changeShortcode} ref="shortcode">
+              <option value=''>Select shortcode to insert</option>
+              {
+                shortcodeOptions.map(function(val, key){
+                  return (<option key={key} value={val.value}>{val.title?val.title:val.value}</option>)
+                })
+              }
+            </select>
+          :null
+          }
+        </div>
+      );
+    } else {
+      return <HEForm.Loading></HEForm.Loading>      
+    }
+  }
+})
+///////////////////////////////////// Form.TextArea /////////////////////////////////////////
+
+///////////////////////////////////// Form.Loading /////////////////////////////////////////
+HEForm.Loading = React.createClass({
+  render: function(){
+    return <div>Loading</div>
+  }
+})
+///////////////////////////////////// Form.Loading /////////////////////////////////////////
 
 module.exports = HEForm;

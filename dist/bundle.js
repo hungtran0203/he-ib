@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "d98595e1f3d7dee06546"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "dd13c669655e94b62b3e"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -890,7 +890,10 @@
 
 	HE.init();
 
-	HE.hook.add_filter('get_config_block_data', function(configBlockData){
+	///////////////////////////////////////// begin define hooks ///////////////////////////////////////////
+
+	/* default blocks */
+	HE.hook.add_filter('getListConfigBlocks', function(configBlockData){
 		//load absolute container
 		configBlockData.containerBlocks.push({type:'container.absolute', name:'container_absolute', title:'Absolute Container'})
 		//load vertical container
@@ -928,20 +931,59 @@
 			attrBlock.getLab().clear('____cachedContentKey');	//clear key to force update content
 		})
 
-		//load image content block
-		configBlockData.contentBlocks.push({	type:'content', name:'image', title:'Image', contentFilter: 'image',
+
+		//setup shortcode block
+		configBlockData.contentBlocks.push({	type:'content', name:'shortcode', title:'Shortcode', contentAction: 'shortcode',
 																					options: {
-																						'image': {
-																							componentName:'HE.UI.components.Form.TextArea',
+																						'shortcode': {
+																							componentName:'HE.UI.components.Form.Shortcode',
 																							value:'',
-																							title:'Image URL',
-																							name:'image'
+																							title:'Shortcode',
 																						}
 																					}
 																				}
 																			);
+		//add action to display html block content
+		HE.hook.add_filter('fetchBlockContent__shortcode', function(content, block){
+			var shortcode = block.getLab().quite().get('options.shortcode.value');
+			HE.storage.get('shortcode', {shortcode:shortcode}, function(res){
+				var content = sanitizeShortcodeContent(res);
+				block.setContent(content);
+			})
+			return 'Loading ...';
+		})
+		function sanitizeShortcodeContent(content){
+			if(content == ''){
+				//empty content, just give hint text
+				content = '<span class="_Hint"><a href="javascript:void(0)" onclick="HE.utils.focusInput(\'option.html\');">Edit Content</a></span>'
+			}
+			return content;
+		}
+		//add action on update html block attributes
+		HE.hook.add_action('updateBlockAttribute__shortcode', function(attrBlock){
+			attrBlock.getLab().clear('____cachedContentKey');	//clear key to force update content
+		})
+
+
 		return configBlockData;
 	})
+
+	/* user blocks */
+	HE.hook.add_filter('getListConfigBlocks__user', function(configBlockData){
+		return configBlockData;
+	})
+
+	/* post blocks */
+	HE.hook.add_filter('getListConfigBlocks__post', function(configBlockData){
+		return configBlockData;
+	})
+
+	/* category blocks */
+	HE.hook.add_filter('getListConfigBlocks__category', function(configBlockData){
+		return configBlockData;
+	})
+
+	///////////////////////////////////////// end define hooks ///////////////////////////////////////////
 	var HEIBApp = React.createClass({displayName: "HEIBApp",
 			mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive],
 			getInitialState: function() {
@@ -983,12 +1025,7 @@
 				})
 
 				//load box from server
-				var configBlockData = {containerBlocks: [],
-																contentBlocks: []
-															};
-
-				configBlockData = HE.hook.apply_filters('get_config_block_data', configBlockData)
-				window.configBlocks = HE.lab.init(configBlockData);
+				window.configBlocks = this.getListConfigBlocks();
 
 				window.HEState = HE.lab.init({});
 
@@ -1046,11 +1083,37 @@
 			getBoxLab: function(index){
 				return this.store.link('boxes.' + index);
 			},
+			getListConfigBlocks: function(){
+				//default hook
+				var filterName = 'getListConfigBlocks';
+				var configBlocks = {containerBlocks: [],
+																contentBlocks: []
+														};
+				configBlocks = HE.hook.apply_filters(filterName, configBlocks);
+
+				//selected box name hook
+				var activeBoxName
+				var selectedBox = this.getSelectedBox();
+				if(selectedBox !== null){
+					activeBoxName = this.store.get('boxes.' + this.getSelectedBox() + '.name')
+					if(activeBoxName !== undefined){
+						configBlocks = HE.hook.apply_filters(filterName + '__' + activeBoxName, configBlocks);
+					}
+				}
+
+				//init or update
+				if(this.configBlocks){
+					this.configBlocks.set('', configBlocks);
+				} else {
+					this.configBlocks = HE.lab.init(configBlocks);
+				}
+				return this.configBlocks;
+			},
 			getLeftColumn:function(){
 	    	if(this.getEditingBox() === null) {
 		    	return React.createElement(HE.UI.components.Block.BoxList, {"data-lab": this.store.link('boxes'), ref: "config"})  
 	    	} else {
-	    		return  React.createElement(HE.UI.components.Block.ConfigList, {"data-lab": this.configBlocks, ref: "config"})
+	    		return  React.createElement(HE.UI.components.Block.ConfigList, {"data-lab": this.getListConfigBlocks(), ref: "config"})
 	    	}
 			},
 			getMiddleColumn: function(){
@@ -22601,7 +22664,7 @@
 	HE.boxStack = {
 		pushState: function(){
 			HE.stack.getInstance('editingBoxDataStack').push(jQuery.extend(true, {}, HE.boxStack.currentState()));
-			HE.hook.do_action('changedHEState__editedBox')
+			// HE.hook.do_action('changedHEState__editedBox')
 		},
 		hasNextState: function(){
 			return HE.stack.getInstance('editingBoxDataStack').hasNext();
@@ -22959,7 +23022,11 @@
 	  this.set = function(ns, val){
 	    ns = lab.joinNs(this.ns, ns);
 	    var oldVal = this.quite().get(ns);
-	    lab.set(ns, this.data, val);
+	    if(ns.length){
+	      lab.set(ns, this.data, val);
+	    } else {
+	      this.data = val;
+	    }
 	    this.dispatch(ns, 'set', [this, oldVal, val]);
 	    return this;
 	  }
@@ -25688,7 +25755,7 @@
 	  render: function(){
 	    return (
 	      React.createElement("div", {className: "form-group"}, 
-	        this.hasTitle()?React.createElement("label", null, this.getTitle()):'', 
+	        this.hasTitle()?React.createElement("div", {className: "form-label"}, this.getTitle()):'', 
 	        React.createElement("textarea", React.__spread({},  this.except(['className', 'value']), {className: this.getClass('form-control'), type: "text", valueLink: this.getValueLink(), ref: "input"}))
 	      )
 	    );
@@ -25742,6 +25809,80 @@
 	  }
 	})
 	///////////////////////////////////// Form.Submit /////////////////////////////////////////
+
+	///////////////////////////////////// Form.Shortcode /////////////////////////////////////////
+	HEForm.Shortcode = React.createClass({displayName: "HEForm.Shortcode",
+	  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.input],
+	  getShortcodeOptions: function(){
+	    var self = this;
+	    if(self.shortcodeOptions === undefined){
+	      HE.storage.get('shortcodes', null, function(data){
+	        var options;
+	        if(Array.isArray(data)){
+	          options = data;
+	        } else {
+	          options = null;
+	        }
+	        self.setShortcodeOptions(options);
+	      });
+	      return [];
+	    }
+	    return this.shortcodeOptions;
+	  },
+	  setShortcodeOptions: function(options){
+	    this.shortcodeOptions = options;
+	    this.forceUpdate();
+	  },
+	  changeShortcode: function(event){
+	    var shortcode = event.target.value;
+	    this.setValue(this.getValue() + shortcode);
+	    if(this.props.onChangeCapture){
+	      this.props.onChangeCapture()  
+	    }
+	  },
+	  render: function(){
+	    //get list of available shortcodes
+	    var shortcodeOptions = this.getShortcodeOptions();
+	    if(shortcodeOptions === null){
+	      return null;
+	    } else if(Array.isArray(shortcodeOptions) && shortcodeOptions.length) {
+	      var val = this.getValue();
+	      var editorClass = '';
+	      if(val === ''){
+	        editorClass = ' he-hidden';
+	      }
+	      return (
+	        React.createElement("div", {className: "form-group"}, 
+	          this.hasTitle()?React.createElement("div", {className: "form-label"}, this.getTitle()):'', 
+	          React.createElement("textarea", React.__spread({},  this.except(['className', 'value']), {className: this.getClass('form-control' + editorClass), type: "text", valueLink: this.getValueLink(), ref: "input"})), 
+	          
+	          shortcodeOptions.length?
+	            React.createElement("select", {className: this.getClass('form-control'), onChange: this.changeShortcode, ref: "shortcode"}, 
+	              React.createElement("option", {value: ""}, "Select shortcode to insert"), 
+	              
+	                shortcodeOptions.map(function(val, key){
+	                  return (React.createElement("option", {key: key, value: val.value}, val.title?val.title:val.value))
+	                })
+	              
+	            )
+	          :null
+	          
+	        )
+	      );
+	    } else {
+	      return React.createElement(HEForm.Loading, null)      
+	    }
+	  }
+	})
+	///////////////////////////////////// Form.TextArea /////////////////////////////////////////
+
+	///////////////////////////////////// Form.Loading /////////////////////////////////////////
+	HEForm.Loading = React.createClass({displayName: "HEForm.Loading",
+	  render: function(){
+	    return React.createElement("div", null, "Loading")
+	  }
+	})
+	///////////////////////////////////// Form.Loading /////////////////////////////////////////
 
 	module.exports = HEForm;
 
@@ -26137,6 +26278,11 @@
 	      content = React.createElement("div", {dangerouslySetInnerHTML: {'__html':content}})
 	    }
 	    return content;
+	  },
+	  setContent: function(content){
+	    var key = this.getCachedContentKey();
+	    HE.cache.set(key, content);
+	    this.forceUpdate();
 	  },
 	  getCachedContent: function(){
 	    var key = this.getCachedContentKey();
@@ -26556,6 +26702,12 @@
 	    HE.HEState.setState('editingBox', lab.getShortNS())
 	    HE.boxStack.pushState();
 	  },
+	  getListOfBoxNames: function(){
+	    //default box names
+	    var listOfBoxNames = [{value:'user', title:'User Box'},{value:'post', title:'Post Box'},{value:'category', title:'Category Box'}];
+	    listOfBoxNames = HE.hook.apply_filters('getListOfBoxNames', listOfBoxNames);
+	    return listOfBoxNames;
+	  },
 	  render: function(){
 	    var self = this;
 	    var boxes = this.getLab().getVal([]);
@@ -26564,7 +26716,7 @@
 	              self.getBox(self.getLab().link(key))
 	            )
 	    });
-	    var newBoxOptions = [{value:'user', title:'User Box'},{value:'post', title:'Post Box'},{value:'category', title:'Category Box'}]
+
 	    return React.createElement("div", {className: "he-BoxList", ref: "block"}, 
 	            React.createElement("div", {className: "__List"}, 
 	            boxesList, 
@@ -26575,7 +26727,7 @@
 	              React.createElement("div", {className: "he-hidden __Body", ref: "newBoxForm"}, 
 	                React.createElement(HE.UI.components.Form.Text, {name: "title", title: "Box Title", defaultValue: "New Box", ref: "newBoxTitle"}
 	                ), 
-	                React.createElement(HE.UI.components.Form.Select, {name: "name", title: "Box Name", "data-options": newBoxOptions, ref: "newBoxName"}
+	                React.createElement(HE.UI.components.Form.Select, {name: "name", title: "Box Name", "data-options": this.getListOfBoxNames(), ref: "newBoxName"}
 	                ), 
 	                React.createElement("button", {onClick: this.addBox}, "Add"), 
 	                React.createElement("button", {onClick: this.cancelBox}, "Cancel")
@@ -26643,8 +26795,6 @@
 	  render: function(){
 	    var self = this;
 	    //fetch content data if not exist
-	    this.fetchContent();
-
 	    return React.createElement("div", {className: "he-DesignBlock he-ContentBlock", style: this.getStyle(), onDoubleClick: this.handleDoubleClick, ref: "block", tabIndex: this.getTabIndex()}, 
 	              React.createElement("div", {className: "__ContentReadOnly"}, 
 	                this.getContent()
@@ -26677,8 +26827,6 @@
 	  render: function(){
 	    var self = this;
 	    //fetch content data if not exist
-	    this.fetchContent();
-
 	    return React.createElement("div", {className: "he-ViewBlock he-ContentBlock", style: this.getStyle(), ref: "block"}, 
 	              this.getContent()
 	          );

@@ -313,7 +313,7 @@ HE.stack = {
 HE.boxStack = {
 	pushState: function(){
 		HE.stack.getInstance('editingBoxDataStack').push(jQuery.extend(true, {}, HE.boxStack.currentState()));
-		HE.hook.do_action('changedHEState__editedBox')
+		// HE.hook.do_action('changedHEState__editedBox')
 	},
 	hasNextState: function(){
 		return HE.stack.getInstance('editingBoxDataStack').hasNext();

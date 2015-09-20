@@ -69,6 +69,7 @@ class HEIBApp {
 		$this->apiHooks();
 		$this->commonHooks();
 
+		$this->shortcodeHooks();
 		$this->ajaxHooks();
 	}
 
@@ -93,14 +94,18 @@ class HEIBApp {
 	}
 
 	private function apiHooks(){
-		add_filter('heib_process_endpoint__boxes.set', 'HEIBEndpoint::setBoxes');
-		add_filter('heib_process_endpoint__boxes.get', 'HEIBEndpoint::getBoxes');
+		require_once(dirname(__FILE__) . '/includes/endpoints.php');
 	}
 	
 	private function commonHooks(){
 	
 	}
 	
+	private function shortcodeHooks(){
+		require_once(dirname(__FILE__) . '/includes/shortcodes.php');
+		HEIBShortcode::init();
+	}
+
 	/****************************************** Define hook call back function ***************************************/
 	public static function admin_menu(){
 		$parent_slug = 'heib_dashboard';
@@ -130,6 +135,11 @@ class HEIBApp {
 	
 	public static function admin_content(){
 		echo '<div id="heib_wrapper"></div>';
+		
+		$settings = array( 'media_buttons' => false );
+		$editor_id = 'heib-editor';
+
+		// wp_editor( '', $editor_id, $settings );
 	}
 
 	public static function ajaxProcess(){
@@ -152,26 +162,6 @@ class HEIBApp {
 
 	/****************************************** End hook call back function ***************************************/
 	
-}
-
-class HEIBEndpoint {
-	public static function setBoxes($res){
-		//sanity box data
-		$query = $res->query();
-		$boxes = $query['value'];
-		if(!$boxes){
-			$res->error = 2;
-			$res->errMsg = 'No data provided';
-		} else {
-			update_option('heib_boxes_data', $boxes);
-		}
-		return $res;
-	}
-
-	public static function getBoxes($res){
-		$res->data = get_option('heib_boxes_data');
-		return $res;
-	}	
 }
 
 class HEIBResponse extends stdClass {

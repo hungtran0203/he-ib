@@ -320,6 +320,11 @@ var blockContentMixins = {
     }
     return content;
   },
+  setContent: function(content){
+    var key = this.getCachedContentKey();
+    HE.cache.set(key, content);
+    this.forceUpdate();
+  },
   getCachedContent: function(){
     var key = this.getCachedContentKey();
     var content = HE.cache.remember(key, this.getContentLifeTime(), this.fetchContent);
@@ -738,6 +743,12 @@ HEUI.BoxList = React.createClass({
     HE.HEState.setState('editingBox', lab.getShortNS())
     HE.boxStack.pushState();
   },
+  getListOfBoxNames: function(){
+    //default box names
+    var listOfBoxNames = [{value:'user', title:'User Box'},{value:'post', title:'Post Box'},{value:'category', title:'Category Box'}];
+    listOfBoxNames = HE.hook.apply_filters('getListOfBoxNames', listOfBoxNames);
+    return listOfBoxNames;
+  },
   render: function(){
     var self = this;
     var boxes = this.getLab().getVal([]);
@@ -746,7 +757,7 @@ HEUI.BoxList = React.createClass({
               {self.getBox(self.getLab().link(key))}
             </div>
     });
-    var newBoxOptions = [{value:'user', title:'User Box'},{value:'post', title:'Post Box'},{value:'category', title:'Category Box'}]
+
     return <div className="he-BoxList" ref="block">
             <div className="__List">
             {boxesList}
@@ -757,7 +768,7 @@ HEUI.BoxList = React.createClass({
               <div className="he-hidden __Body" ref="newBoxForm">
                 <HE.UI.components.Form.Text name="title" title="Box Title" defaultValue="New Box" ref="newBoxTitle">
                 </HE.UI.components.Form.Text>
-                <HE.UI.components.Form.Select name="name" title="Box Name" data-options={newBoxOptions} ref="newBoxName">
+                <HE.UI.components.Form.Select name="name" title="Box Name" data-options={this.getListOfBoxNames()} ref="newBoxName">
                 </HE.UI.components.Form.Select>
                 <button onClick={this.addBox}>Add</button>
                 <button onClick={this.cancelBox}>Cancel</button>
@@ -825,8 +836,6 @@ HEUI.Content.Edit = React.createClass({
   render: function(){
     var self = this;
     //fetch content data if not exist
-    this.fetchContent();
-
     return <div className="he-DesignBlock he-ContentBlock" style={this.getStyle()} onDoubleClick={this.handleDoubleClick} ref="block" tabIndex={this.getTabIndex()}>
               <div className="__ContentReadOnly" >
                 {this.getContent()}
@@ -859,8 +868,6 @@ HEUI.Content.View = React.createClass({
   render: function(){
     var self = this;
     //fetch content data if not exist
-    this.fetchContent();
-
     return <div className="he-ViewBlock he-ContentBlock" style={this.getStyle()} ref="block">
               {this.getContent()}
           </div>;

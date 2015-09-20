@@ -61,7 +61,11 @@ function LAB(ns, data, binder, pagingCollection, states){
   this.set = function(ns, val){
     ns = lab.joinNs(this.ns, ns);
     var oldVal = this.quite().get(ns);
-    lab.set(ns, this.data, val);
+    if(ns.length){
+      lab.set(ns, this.data, val);
+    } else {
+      this.data = val;
+    }
     this.dispatch(ns, 'set', [this, oldVal, val]);
     return this;
   }
