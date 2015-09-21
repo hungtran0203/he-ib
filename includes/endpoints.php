@@ -3,6 +3,33 @@
 
 //////////////////// Start Boxes Endpoints ///////////////////////////
 /* 
+	batch endpoint
+*/
+add_filter('heib_process_endpoint__batch', function($res){
+		//sanity box data
+	$query = $res->query();
+	if(!isset($query['batch'])){
+		$res->error = 2;
+		$res->errMsg = 'No data provided';
+	} else {
+		$batchData = $query['batch'];
+		if(!is_array($batchData)){
+			$res->error = 2;
+			$res->errMsg = 'Invalid batch query';
+		} else {
+			$data = array_map(function($batch){
+				$res = new HEIBResponse($batch);
+				$res = HEIBApp::processEndpoint($res);
+				return $res->toObject();
+			}, $batchData);
+			$res->data = $data;
+		}
+	}
+	return $res;
+
+});
+
+/* 
 	set boxes endpoint
 */
 add_filter('heib_process_endpoint__boxes.set', function($res){

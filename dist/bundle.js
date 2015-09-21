@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "dd13c669655e94b62b3e"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "24c341ea9f555a1e8653"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -22496,6 +22496,97 @@
 	        }
 	    });  
 		},
+		ajaxBatchHandler: function(args){
+			var batchData = args.map(function(arg){
+				return arg[0];
+			});
+			HE.utils.ajax({endpoint:'batch', batch: batchData}, 
+											function(res){
+												if(res && res.data && Array.isArray(res.data)){
+													res.data.map(function(subRes, key){
+														if(args[key][1] && typeof args[key][1] === 'function'){
+															args[key][1](subRes);
+														}
+													});
+												}
+											}, 
+											function(){
+												if(Array.isArray(args[2])){
+													args.map(function(arg){
+														if(arg[2] && typeof arg[2] === 'function'){
+															arg[2]();
+														}
+													});
+												}
+											})
+		},
+		staticBatchKeys: {},
+		getBatch: function(key, fun, delay){
+			delay = delay || 30;
+			if(!HE.utils.staticBatchKeys[key]){
+				var args = [];
+				var timer = null;
+				HE.utils.staticBatchKeys[key] = function(){
+					var context = this;
+					args.push(Array.prototype.slice.call(arguments, 0));
+					if(timer === null){
+						timer = setTimeout(function () {
+							fun.apply(context, [args]);
+							delete HE.utils.staticBatchKeys[key];
+							timer = null;	//reset timer
+						}, delay);					
+					}
+				}			
+			}
+			return HE.utils.staticBatchKeys[key];
+		},
+		throttle: function (fun, delay) {
+			var timer = null;
+
+			return function () {
+				var context = this, args = arguments;
+
+				clearTimeout(timer);
+				timer = setTimeout(function () {
+					fun.apply(context, args);
+				}, delay);
+			};
+		},
+		lockFunction: function (fun, delay) {
+			var lock = null;
+			var timer = null;
+			return function () {
+				var context = this, args = arguments;
+				if (!lock) {
+					fun.apply(context, args);
+					lock = true;
+				}
+				clearTimeout(timer);
+				timer = setTimeout(function () {
+					lock = false;
+				}, delay);
+			};
+		},
+		staticThrottleKeys: {},
+		getThrottle: function(key, func, delay) {
+			if(typeof key === 'function'){
+				return HE.utils.throttle(key, func)
+			}
+			if(!HE.utils.staticThrottleKeys[key]){
+				HE.utils.staticThrottleKeys[key] = HE.utils.throttle(func, delay);
+			}
+			return HE.utils.staticThrottleKeys[key];
+		},
+		staticLockKeys: {},
+		getLock: function(key, func, delay){
+			if(typeof key === 'function'){
+				return HE.utils.throttle(key, func)
+			}
+			if(!HE.utils.staticLockKeys[key]){
+				HE.utils.staticLockKeys[key] = HE.utils.lockFunction(func, delay);
+			}
+			return HE.utils.staticLockKeys[key];
+		},
 		nextTick: function(fn){
 			setTimeout(fn, 10);
 		},
@@ -22898,10 +22989,12 @@
 
 	var ajaxStorageHandler = function(){
 		this.getData = function(endpoint, params, passCb, failCb){
-			HE.utils.ajax(jQuery.extend(true, {}, params, {endpoint:endpoint + '.get'}), function(res){
+			params = jQuery.extend(true, {}, params, {endpoint:endpoint + '.get'});
+			//apply batch
+			HE.utils.getBatch('heibAjaxStorage', HE.utils.ajaxBatchHandler)(params, function(res){
 				if(typeof passCb === 'function') {
 					passCb(res.data);
-				}
+				}			
 			}, failCb);
 		}
 		this.setData = function(endpoint, val, params, passCb, failCb){

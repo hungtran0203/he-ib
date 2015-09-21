@@ -180,6 +180,19 @@ class HEIBResponse extends stdClass {
 	public function toJson(){
 		return json_encode($this);
 	}
+	public function toObject(){
+		$rtn = new stdClass();
+		if(isset($this->data)){
+			$rtn->data = $this->data;
+		}
+		if(isset($this->error)){
+			$rtn->error = $this->error;
+		}
+		if(isset($this->errMsg)){
+			$rtn->errMsg = $this->errMsg;
+		}
+		return $rtn;
+	}
 }
 
 $GLOBALS['heib'] = HEIBApp::getInstance();
