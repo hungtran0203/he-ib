@@ -1,6 +1,33 @@
 <?php
 // Define all endpoint
 
+/* 
+	return post permanklink structure
+*/
+add_filter('heib__get_permalink.post', function($permalink){
+	return home_url(get_option('permalink_structure'));
+});
+
+/* 
+	return user permanklink structure
+*/
+add_filter('heib__get_permalink.user', function($permalink){
+	global $wp_rewrite;
+	return home_url($wp_rewrite->get_author_permastruct());
+});
+
+/* 
+	return category permanklink structure
+*/
+add_filter('heib__get_permalink.category', function($permalink){
+	global $wp_rewrite;
+	$term = get_term(1, 'category');
+	$taxonomy = $term->taxonomy;
+	$termlink = $wp_rewrite->get_extra_permastruct($taxonomy);
+	return home_url($termlink);
+});
+
+
 //////////////////// Start Boxes Endpoints ///////////////////////////
 /* 
 	batch endpoint
@@ -27,6 +54,36 @@ add_filter('heib_process_endpoint__batch', function($res){
 	}
 	return $res;
 
+});
+
+/* 
+	get box pattern
+*/
+add_filter('heib_process_endpoint__box.permalinks.get', function($res){
+	$permalinks = new stdClass();
+	//post permalink
+	$permalink = apply_filters('heib__get_permalink.post', '');
+	if($permalink != ''){
+		$permalinks->post = $permalink;
+	}
+
+	//user permalink
+	$permalink = apply_filters('heib__get_permalink.user', '');
+	if($permalink != ''){
+		$permalinks->user = $permalink;
+	}
+
+	//category permalink
+	$permalink = apply_filters('heib__get_permalink.category', '');
+	if($permalink != ''){
+		$permalinks->category = $permalink;
+	}
+
+	//home permalink
+	$permalinks->home = home_url('');
+
+	$res->data = $permalinks;
+	return $res;
 });
 
 /* 

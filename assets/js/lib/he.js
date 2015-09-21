@@ -295,9 +295,71 @@ HE.utils = {
 			}
 		}
 		return ns;
+	},
+	showBox: function($ele, type){
+
 	}
 }
 ////////////////////////////////// Utils ///////////////////////////////////////
+
+////////////////////////////////// url ///////////////////////////////////////
+HE.url = {
+	getBoxPermalinks: function(cb){
+		HE.storage.get('box.permalinks', {}, function(res){
+			cb(res)
+		})
+	},
+	bindUrl: function(){
+		HE.url.getBoxPermalinks(function(permalinks){
+			jQuery('a').each(function(){
+				var href = this.href;
+				if(href.indexOf(permalinks.home) === 0){
+					for(var type in permalinks){
+						if(type !== 'home' && HE.url.matchUrl(href, permalinks[type])){
+							jQuery(this).data('heibType', type);
+							return;
+						}
+					}
+				}
+			})
+
+		})
+		jQuery('a', document).on('mouseenter', function(){
+			var $this = jQuery(this);
+			var boxType = $this.data('heibType');
+			if(boxType !== undefined){
+				HE.utils.showBox($this, boxType);
+				console.log('eeeeeeeeeeeeeeeeeeeeee')
+			}
+		});
+	},
+	matchUrl: function(url, pattern){
+		var tagRegs = {
+			'%year%': 				'[0-2][0-9]{3}',
+			'%monthnum%': 		'[0-1][0-9]',
+			'%day%': 					'[0-3][0-9]',
+			'%hour%': 				'[0-2][0-9]',
+			'%minute%': 			'[0-6][0-9]',
+			'%second%': 			'[0-6][0-9]',
+			'%post_id%': 			'\d+',
+			'%postname%': 		'[^/]+',
+			'%category%': 		'[^/]+',
+			'%author%': 			'[^/]+',
+		}
+		for(var key in tagRegs){
+			pattern = pattern.replace(key, tagRegs[key]);
+		}
+		var re = new RegExp(pattern, 'i');
+		var result = url.match(re);
+
+		if(result !== null) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+}
+////////////////////////////////// url ///////////////////////////////////////
 
 ////////////////////////////////// Cache ///////////////////////////////////////
 HE.cache = {

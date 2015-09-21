@@ -552,9 +552,9 @@ HEUI.Attributes = React.createClass({
     var contentAction = this.getLab().get('contentAction');
     var self = this;
     if(contentAction){
-      HE.utils.nextTick(function(){
+      HE.utils.getThrottle('updateBlockAttribute', function(){
         HE.hook.do_action('updateBlockAttribute__' + contentAction, self)
-      })
+      }, 1000).apply();
     }
   },
   removeAttribute: function(attr){
