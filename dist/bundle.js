@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "58931f7f857e5925faed"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "4e867afb67556042d78d"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -592,7 +592,7 @@
 
 
 	// module
-	exports.push([module.id, "meta.foundation-version {\n  font-family: \"/5.5.2/\"; }\n\nmeta.foundation-mq-small {\n  font-family: \"/only screen/\";\n  width: 0; }\n\nmeta.foundation-mq-small-only {\n  font-family: \"/only screen and (max-width: 40em)/\";\n  width: 0; }\n\nmeta.foundation-mq-medium {\n  font-family: \"/only screen and (min-width:40.0625em)/\";\n  width: 40.0625em; }\n\nmeta.foundation-mq-medium-only {\n  font-family: \"/only screen and (min-width:40.0625em) and (max-width:64em)/\";\n  width: 40.0625em; }\n\nmeta.foundation-mq-large {\n  font-family: \"/only screen and (min-width:64.0625em)/\";\n  width: 64.0625em; }\n\nmeta.foundation-mq-large-only {\n  font-family: \"/only screen and (min-width:64.0625em) and (max-width:90em)/\";\n  width: 64.0625em; }\n\nmeta.foundation-mq-xlarge {\n  font-family: \"/only screen and (min-width:90.0625em)/\";\n  width: 90.0625em; }\n\nmeta.foundation-mq-xlarge-only {\n  font-family: \"/only screen and (min-width:90.0625em) and (max-width:120em)/\";\n  width: 90.0625em; }\n\nmeta.foundation-mq-xxlarge {\n  font-family: \"/only screen and (min-width:120.0625em)/\";\n  width: 120.0625em; }\n\nmeta.foundation-data-attribute-namespace {\n  font-family: false; }\n\n/* Panels */\n.he-Panel {\n  /* cursor modifier */ }\n  .he-Panel .__Head {\n    padding: 0.3125rem 1.25rem;\n    border-style: solid;\n    border-width: 1px;\n    border-color: #d8d8d8;\n    background: #f2f2f2; }\n  .he-Panel._pointer .__Head {\n    cursor: pointer; }\n  .he-Panel._movable .__Head {\n    cursor: move; }\n  .he-Panel .__Body {\n    border-style: solid;\n    border-width: 1px;\n    border-color: #d8d8d8;\n    margin-bottom: 1.25rem;\n    padding: 1rem;\n    background: #FFFFFF;\n    color: #333333; }\n    .he-Panel .__Body > :first-child {\n      margin-top: 0; }\n    .he-Panel .__Body > :last-child {\n      margin-bottom: 0; }\n    .he-Panel .__Body h1, .he-Panel .__Body h2, .he-Panel .__Body h3, .he-Panel .__Body h4, .he-Panel .__Body h5, .he-Panel .__Body h6, .he-Panel .__Body p, .he-Panel .__Body li, .he-Panel .__Body dl {\n      color: #333333; }\n    .he-Panel .__Body h1, .he-Panel .__Body h2, .he-Panel .__Body h3, .he-Panel .__Body h4, .he-Panel .__Body h5, .he-Panel .__Body h6 {\n      line-height: 1;\n      margin-bottom: 0.625rem; }\n      .he-Panel .__Body h1.subheader, .he-Panel .__Body h2.subheader, .he-Panel .__Body h3.subheader, .he-Panel .__Body h4.subheader, .he-Panel .__Body h5.subheader, .he-Panel .__Body h6.subheader {\n        line-height: 1.4; }\n    .he-Panel .__Body.callout {\n      border-style: solid;\n      border-width: 1px;\n      border-color: #d8d8d8;\n      margin-bottom: 1.25rem;\n      padding: 1.25rem;\n      background: #ecfaff;\n      color: #333333; }\n      .he-Panel .__Body.callout > :first-child {\n        margin-top: 0; }\n      .he-Panel .__Body.callout > :last-child {\n        margin-bottom: 0; }\n      .he-Panel .__Body.callout h1, .he-Panel .__Body.callout h2, .he-Panel .__Body.callout h3, .he-Panel .__Body.callout h4, .he-Panel .__Body.callout h5, .he-Panel .__Body.callout h6, .he-Panel .__Body.callout p, .he-Panel .__Body.callout li, .he-Panel .__Body.callout dl {\n        color: #333333; }\n      .he-Panel .__Body.callout h1, .he-Panel .__Body.callout h2, .he-Panel .__Body.callout h3, .he-Panel .__Body.callout h4, .he-Panel .__Body.callout h5, .he-Panel .__Body.callout h6 {\n        line-height: 1;\n        margin-bottom: 0.625rem; }\n        .he-Panel .__Body.callout h1.subheader, .he-Panel .__Body.callout h2.subheader, .he-Panel .__Body.callout h3.subheader, .he-Panel .__Body.callout h4.subheader, .he-Panel .__Body.callout h5.subheader, .he-Panel .__Body.callout h6.subheader {\n          line-height: 1.4; }\n      .he-Panel .__Body.callout a:not(.button) {\n        color: #008CBA; }\n        .he-Panel .__Body.callout a:not(.button):hover,\n        .he-Panel .__Body.callout a:not(.button):focus {\n          color: #0078a0; }\n    .he-Panel .__Body.radius {\n      border-radius: 3px; }\n\n/* Form */\n.he-Grid__Rows:after {\n  clear: both; }\n\n.he-DesignViewPort {\n  padding: 20px;\n  background-color: whitesmoke; }\n\n.he-DesignCanvas {\n  border: solid 1px;\n  border-color: #ccc;\n  padding: 5px;\n  position: relative;\n  width: 100%;\n  height: 100%;\n  min-height: 400px;\n  background-color: #fff;\n  background-image: linear-gradient(#f8f8f8 2px, transparent 2px), linear-gradient(90deg, #f8f8f8 2px, transparent 2px);\n  background-size: 50px 50px, 50px 50px;\n  background-position: -1px -1px, -1px -1px; }\n\n.he-DesignBlock {\n  border: solid 1px;\n  border-color: #ccc; }\n\n.he-Ruler__Horizontal {\n  position: fixed;\n  border-bottom: solid 1px;\n  text-align: center;\n  padding-top: 0px !important;\n  padding-bottom: 0px !important;\n  z-index: 9999; }\n\n.he-Ruler__Vertical {\n  position: absolute;\n  border-right: solid 1px;\n  padding-left: 0px !important;\n  padding-right: 0px !important;\n  z-index: 9999; }\n  .he-Ruler__Vertical > span {\n    position: absolute;\n    top: 50%;\n    left: -10px;\n    margin-top: -50%;\n    transform: rotate(-90deg); }\n\n.he-BlockCoordinate {\n  position: fixed;\n  z-index: 9999; }\n\n.he-dropActive:not(.he-parentOnly) {\n  border: dashed; }\n\n/*\r\n\t1. BEM convention\r\n\the-B__E_M where B, E, M follow CamelCase rule\r\n\tExample:\r\n\t<div class=\"he-BlockContent __Static _Red\">\r\n\t\t<div class=\"__Header\">\r\n\t\t</div>\r\n\t\t<div class=\"__Body _Blue\">\r\n\t\t</div>\r\n\t</div>\r\n\t2. Utilities convention\r\n\the-camelCase where T follow camelCase rule\r\n\tExample:\r\n\t<div class=\"he-floatLeft he-hidden\">\r\n\t</div>\r\n*/\n.he-Column {\n  padding: 0.3125rem 0.625rem; }\n\n.he-ConfigBlockList .he-DesignBlock {\n  position: static; }\n\n.he-ConfigBlockList .__ContainerBlocks {\n  position: relative; }\n\n.he-ConfigBlockList .__ContentBlocks {\n  position: relative; }\n\n.he-ConfigBlock {\n  margin-top: 2px; }\n  .he-ConfigBlock .__Head {\n    padding: 0.3125rem 1.25rem;\n    background: #f2f2f2; }\n  .he-ConfigBlock .__Body {\n    display: none; }\n    .he-ConfigBlock .__Body._LoadContent {\n      display: block;\n      min-height: 10px; }\n\n.he-Box {\n  position: absolute;\n  background-color: #f8f8f8; }\n  .he-Box._Center {\n    left: 50%;\n    margin-top: 40px;\n    margin-bottom: 40px;\n    transform: translateX(-50%);\n    position: relative; }\n  .he-Box.__View, .he-Box.__Design {\n    border: solid 1px;\n    border-color: #ccc; }\n\n.he-BoxList .__List {\n  list-style-type: none; }\n\n.he-ContainerBlock__Horizontal .he-SortableBlock {\n  float: left; }\n  .he-ContainerBlock__Horizontal .he-SortableBlock.he-hasDragItem > .__Content {\n    float: left;\n    min-width: 40px; }\n\n.he-SortableBlock {\n  position: static; }\n  .he-SortableBlock.__Placeholder {\n    display: none; }\n  .he-SortableBlock > .__Shadow > .he-DesignBlock {\n    position: relative;\n    top: auto !important;\n    left: auto !important; }\n  .he-SortableBlock > .__Content > .he-DesignBlock:not(.he-dragging), .he-SortableBlock > .__Content .he-ViewBlock:not(.he-dragging) {\n    position: relative;\n    top: auto !important;\n    left: auto !important; }\n  .he-SortableBlock > .__Content > .he-DesignBlock .__ContentReadOnly, .he-SortableBlock > .__Content .he-ViewBlock .__ContentReadOnly {\n    height: auto;\n    width: auto; }\n  .he-SortableBlock.he-hasDragItem > .__Content {\n    min-height: 30px;\n    margin: 4px;\n    background-color: wheat; }\n    .he-SortableBlock.he-hasDragItem > .__Content > * {\n      display: none !important; }\n\n.he-ContentBlock > .__ContentReadOnly {\n  display: block;\n  width: 100%;\n  height: 100%;\n  top: 0px;\n  left: 0px; }\n  .he-ContentBlock > .__ContentReadOnly ._Hint {\n    color: #ccc;\n    padding: 5px;\n    z-index: 1;\n    position: relative; }\n\n.he-ContentBlock > .__ContentOverlay {\n  display: block;\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  top: 0px;\n  left: 0px; }\n\n.he-NewBoxForm {\n  margin-top: 10px; }\n  .he-NewBoxForm .__Body {\n    background: #ffffff;\n    border: 1px solid whitesmoke;\n    padding: 5px; }\n\n.he-dropActive .he-SortableBlock.__Placeholder {\n  height: 20px;\n  display: block; }\n\n.he-dropTarget:not(.he-parentOnly) {\n  background-color: wheat !important;\n  z-index: 5 !important; }\n\n.he-dropParent {\n  background-color: wheat !important;\n  z-index: 5 !important; }\n\n.he-DesignBlock, .he-ViewBlock {\n  z-index: 10;\n  position: absolute; }\n\n.he-DesignBlock.he-focus {\n  border-color: blue; }\n\n.he-hidden {\n  display: none; }\n\n.he-dragging {\n  z-index: 100;\n  position: absolute !important; }\n", ""]);
+	exports.push([module.id, "meta.foundation-version {\n  font-family: \"/5.5.2/\"; }\n\nmeta.foundation-mq-small {\n  font-family: \"/only screen/\";\n  width: 0; }\n\nmeta.foundation-mq-small-only {\n  font-family: \"/only screen and (max-width: 40em)/\";\n  width: 0; }\n\nmeta.foundation-mq-medium {\n  font-family: \"/only screen and (min-width:40.0625em)/\";\n  width: 40.0625em; }\n\nmeta.foundation-mq-medium-only {\n  font-family: \"/only screen and (min-width:40.0625em) and (max-width:64em)/\";\n  width: 40.0625em; }\n\nmeta.foundation-mq-large {\n  font-family: \"/only screen and (min-width:64.0625em)/\";\n  width: 64.0625em; }\n\nmeta.foundation-mq-large-only {\n  font-family: \"/only screen and (min-width:64.0625em) and (max-width:90em)/\";\n  width: 64.0625em; }\n\nmeta.foundation-mq-xlarge {\n  font-family: \"/only screen and (min-width:90.0625em)/\";\n  width: 90.0625em; }\n\nmeta.foundation-mq-xlarge-only {\n  font-family: \"/only screen and (min-width:90.0625em) and (max-width:120em)/\";\n  width: 90.0625em; }\n\nmeta.foundation-mq-xxlarge {\n  font-family: \"/only screen and (min-width:120.0625em)/\";\n  width: 120.0625em; }\n\nmeta.foundation-data-attribute-namespace {\n  font-family: false; }\n\n/* Panels */\n.he-Panel {\n  /* cursor modifier */ }\n  .he-Panel .__Head {\n    padding: 0.3125rem 1.25rem;\n    border-style: solid;\n    border-width: 1px;\n    border-color: #d8d8d8;\n    background: #f2f2f2; }\n  .he-Panel._pointer .__Head {\n    cursor: pointer; }\n  .he-Panel._movable .__Head {\n    cursor: move; }\n  .he-Panel .__Body {\n    border-style: solid;\n    border-width: 1px;\n    border-color: #d8d8d8;\n    margin-bottom: 1.25rem;\n    padding: 1rem;\n    background: #FFFFFF;\n    color: #333333; }\n    .he-Panel .__Body > :first-child {\n      margin-top: 0; }\n    .he-Panel .__Body > :last-child {\n      margin-bottom: 0; }\n    .he-Panel .__Body h1, .he-Panel .__Body h2, .he-Panel .__Body h3, .he-Panel .__Body h4, .he-Panel .__Body h5, .he-Panel .__Body h6, .he-Panel .__Body p, .he-Panel .__Body li, .he-Panel .__Body dl {\n      color: #333333; }\n    .he-Panel .__Body h1, .he-Panel .__Body h2, .he-Panel .__Body h3, .he-Panel .__Body h4, .he-Panel .__Body h5, .he-Panel .__Body h6 {\n      line-height: 1;\n      margin-bottom: 0.625rem; }\n      .he-Panel .__Body h1.subheader, .he-Panel .__Body h2.subheader, .he-Panel .__Body h3.subheader, .he-Panel .__Body h4.subheader, .he-Panel .__Body h5.subheader, .he-Panel .__Body h6.subheader {\n        line-height: 1.4; }\n    .he-Panel .__Body.callout {\n      border-style: solid;\n      border-width: 1px;\n      border-color: #d8d8d8;\n      margin-bottom: 1.25rem;\n      padding: 1.25rem;\n      background: #ecfaff;\n      color: #333333; }\n      .he-Panel .__Body.callout > :first-child {\n        margin-top: 0; }\n      .he-Panel .__Body.callout > :last-child {\n        margin-bottom: 0; }\n      .he-Panel .__Body.callout h1, .he-Panel .__Body.callout h2, .he-Panel .__Body.callout h3, .he-Panel .__Body.callout h4, .he-Panel .__Body.callout h5, .he-Panel .__Body.callout h6, .he-Panel .__Body.callout p, .he-Panel .__Body.callout li, .he-Panel .__Body.callout dl {\n        color: #333333; }\n      .he-Panel .__Body.callout h1, .he-Panel .__Body.callout h2, .he-Panel .__Body.callout h3, .he-Panel .__Body.callout h4, .he-Panel .__Body.callout h5, .he-Panel .__Body.callout h6 {\n        line-height: 1;\n        margin-bottom: 0.625rem; }\n        .he-Panel .__Body.callout h1.subheader, .he-Panel .__Body.callout h2.subheader, .he-Panel .__Body.callout h3.subheader, .he-Panel .__Body.callout h4.subheader, .he-Panel .__Body.callout h5.subheader, .he-Panel .__Body.callout h6.subheader {\n          line-height: 1.4; }\n      .he-Panel .__Body.callout a:not(.button) {\n        color: #008CBA; }\n        .he-Panel .__Body.callout a:not(.button):hover,\n        .he-Panel .__Body.callout a:not(.button):focus {\n          color: #0078a0; }\n    .he-Panel .__Body.radius {\n      border-radius: 3px; }\n\n/* Form */\n.he-Grid__Rows:after {\n  clear: both; }\n\n.he-DesignViewPort {\n  background-color: whitesmoke; }\n\n.he-DesignCanvas {\n  border: solid 1px;\n  border-color: #ccc;\n  padding: 5px;\n  position: relative;\n  width: 100%;\n  height: 100%;\n  min-height: 400px;\n  background-color: #fff;\n  background-image: linear-gradient(#f8f8f8 2px, transparent 2px), linear-gradient(90deg, #f8f8f8 2px, transparent 2px);\n  background-size: 50px 50px, 50px 50px;\n  background-position: -1px -1px, -1px -1px; }\n  .he-DesignCanvas .he-Box {\n    left: 50%;\n    margin-top: 40px;\n    margin-bottom: 40px;\n    transform: translateX(-50%);\n    position: relative; }\n\n.he-DesignBlock {\n  border: solid 1px;\n  border-color: #ccc; }\n\n.he-Ruler__Horizontal {\n  position: fixed;\n  border-bottom: solid 1px;\n  text-align: center;\n  padding-top: 0px !important;\n  padding-bottom: 0px !important;\n  z-index: 9999; }\n\n.he-Ruler__Vertical {\n  position: absolute;\n  border-right: solid 1px;\n  padding-left: 0px !important;\n  padding-right: 0px !important;\n  z-index: 9999; }\n  .he-Ruler__Vertical > span {\n    position: absolute;\n    top: 50%;\n    left: -10px;\n    margin-top: -50%;\n    transform: rotate(-90deg); }\n\n.he-BlockCoordinate {\n  position: fixed;\n  z-index: 9999; }\n\n.he-dropActive:not(.he-parentOnly) {\n  border: dashed; }\n\n/*\r\n\t1. BEM convention\r\n\the-B__E_M where B, E, M follow CamelCase rule\r\n\tExample:\r\n\t<div class=\"he-BlockContent __Static _Red\">\r\n\t\t<div class=\"__Header\">\r\n\t\t</div>\r\n\t\t<div class=\"__Body _Blue\">\r\n\t\t</div>\r\n\t</div>\r\n\t2. Utilities convention\r\n\the-camelCase where T follow camelCase rule\r\n\tExample:\r\n\t<div class=\"he-floatLeft he-hidden\">\r\n\t</div>\r\n*/\n.he-Column {\n  padding: 0.3125rem 0.625rem; }\n\n.he-ConfigBlockList .he-DesignBlock {\n  position: static; }\n\n.he-ConfigBlockList .__ContainerBlocks {\n  position: relative; }\n\n.he-ConfigBlockList .__ContentBlocks {\n  position: relative; }\n\n.he-ConfigBlock {\n  margin-top: 2px; }\n  .he-ConfigBlock .__Head {\n    padding: 0.3125rem 1.25rem;\n    background: #f2f2f2; }\n  .he-ConfigBlock .__Body {\n    display: none; }\n    .he-ConfigBlock .__Body._LoadContent {\n      display: block;\n      min-height: 10px; }\n\n.he-Box {\n  position: absolute;\n  background-color: #f8f8f8; }\n  .he-Box.__View, .he-Box.__Design {\n    border: solid 1px;\n    border-color: #ccc; }\n\n.he-BoxList .__List {\n  list-style-type: none; }\n\n.he-ContainerBlock__Horizontal .he-SortableBlock {\n  float: left; }\n  .he-ContainerBlock__Horizontal .he-SortableBlock.he-hasDragItem > .__Content {\n    float: left;\n    min-width: 40px; }\n\n.he-SortableBlock {\n  position: static; }\n  .he-SortableBlock.__Placeholder {\n    display: none; }\n  .he-SortableBlock > .__Shadow > .he-DesignBlock {\n    position: relative;\n    top: auto !important;\n    left: auto !important; }\n  .he-SortableBlock > .__Content > .he-DesignBlock:not(.he-dragging), .he-SortableBlock > .__Content .he-ViewBlock:not(.he-dragging) {\n    position: relative;\n    top: auto !important;\n    left: auto !important; }\n  .he-SortableBlock > .__Content > .he-DesignBlock .__ContentReadOnly, .he-SortableBlock > .__Content .he-ViewBlock .__ContentReadOnly {\n    height: auto;\n    width: auto; }\n  .he-SortableBlock.he-hasDragItem > .__Content {\n    min-height: 30px;\n    margin: 4px;\n    background-color: wheat; }\n    .he-SortableBlock.he-hasDragItem > .__Content > * {\n      display: none !important; }\n\n.he-ContentBlock > .__ContentReadOnly {\n  display: block;\n  width: 100%;\n  height: 100%;\n  top: 0px;\n  left: 0px; }\n  .he-ContentBlock > .__ContentReadOnly ._Hint {\n    color: #ccc;\n    padding: 5px;\n    z-index: 1;\n    position: relative; }\n\n.he-ContentBlock > .__ContentOverlay {\n  display: block;\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  top: 0px;\n  left: 0px; }\n\n.he-NewBoxForm {\n  margin-top: 10px; }\n  .he-NewBoxForm .__Body {\n    background: #ffffff;\n    border: 1px solid whitesmoke;\n    padding: 5px; }\n\n.he-dropActive .he-SortableBlock.__Placeholder {\n  height: 20px;\n  display: block; }\n\n.he-dropTarget:not(.he-parentOnly) {\n  background-color: wheat !important;\n  z-index: 5 !important; }\n\n.he-dropParent {\n  background-color: wheat !important;\n  z-index: 5 !important; }\n\n.he-DesignBlock, .he-ViewBlock {\n  z-index: 10;\n  position: absolute; }\n\n.he-DesignBlock.he-focus {\n  border-color: blue; }\n\n.he-hidden {\n  display: none; }\n\n.he-dragging {\n  z-index: 100;\n  position: absolute !important; }\n\n#heib_box_wrapper {\n  position: absolute;\n  display: none;\n  z-index: 9999;\n  background: white;\n  border: solid 1px whitesmoke; }\n", ""]);
 
 	// exports
 
@@ -1133,7 +1133,7 @@
 			  			), 
 	    				React.createElement("div", {className: "he-DesignViewPort"}, 
 			  				React.createElement("div", {className: "he-DesignCanvas"}, 
-			  					boxView
+		  						boxView
 			  				)
 	    				)
 	    			)
@@ -22647,11 +22647,63 @@
 			}
 			return ns;
 		},
-		showBox: function($ele, type){
-
+		setDelayState: function(stateName, cb, delay){
+			HE.cache.set('delayState_' + stateName, 1, delay);
+			setTimeout(function(){
+				var state = HE.cache.get('delayState_' + stateName);
+				if(state){
+					cb();
+				}
+			}, delay - 50);
+		},
+		clearDelayState: function(stateName){
+			HE.cache.forget('delayState_' + stateName);
 		}
 	}
 	////////////////////////////////// Utils ///////////////////////////////////////
+
+	////////////////////////////////// Box ///////////////////////////////////////
+	HE.box = {
+		showBox: function($ele, type){
+			var offset = $ele.offset();
+			var $box = HE.box.findOrNewBox();
+			jQuery($box).css('top', offset.top + 20)
+					.css('left', offset.left)
+					.show()
+			jQuery($box).data('heibUrl', $ele[0].href)
+									.data('heibType', type)
+									.trigger('heibUpdateBoxContent')
+		},
+		hideBox: function(){
+			var $box = jQuery('#heib_box_wrapper');
+			HE.utils.setDelayState('mouseLeaveBox', function(){
+				$box.hide();
+			}, 700);
+		},
+		cancelHideBox: function(){
+			HE.utils.clearDelayState('mouseLeaveBox');
+		},
+		findOrNewBox: function(){
+			var HEIBBox = __webpack_require__(207);
+			var React = __webpack_require__(6);
+
+			var $box = jQuery('#heib_box_wrapper');
+			if(!$box.length) {
+				$box = jQuery('<div id="heib_box_wrapper"><div id="heib_box_content"></div></div>');
+				jQuery('body').append($box);
+				React.render(React.createElement(HEIBBox), document.getElementById('heib_box_content'));
+			}
+			//bind box events
+			$box.on('mouseenter', function(){
+				HE.box.cancelHideBox();
+			})
+			.on('mouseleave', function(){
+				HE.box.hideBox();
+			})
+			return $box;
+		}
+	}
+	////////////////////////////////// Box ///////////////////////////////////////
 
 	////////////////////////////////// url ///////////////////////////////////////
 	HE.url = {
@@ -22675,13 +22727,20 @@
 				})
 
 			})
+
 			jQuery('a', document).on('mouseenter', function(){
 				var $this = jQuery(this);
 				var boxType = $this.data('heibType');
 				if(boxType !== undefined){
-					HE.utils.showBox($this, boxType);
-					console.log('eeeeeeeeeeeeeeeeeeeeee')
+					HE.box.showBox($this, boxType);
 				}
+			})
+			.on('mouseleave', function(){
+				var $this = jQuery(this);
+				var boxType = $this.data('heibType');
+				if(boxType !== undefined){
+					HE.box.hideBox($this, boxType);
+				}			
 			});
 		},
 		matchUrl: function(url, pattern){
@@ -27056,7 +27115,7 @@
 	  render: function(){
 	    var childBlocks = this.getLab().get('blocks', []);
 	    var self = this;
-	    return React.createElement("div", {className: "he-ViewBlock he-Box __View _Center", style: this.getStyle(), ref: "block"}, 
+	    return React.createElement("div", {className: "he-ViewBlock he-Box __View", style: this.getStyle(), ref: "block"}, 
 	            
 	              childBlocks.length?
 	              childBlocks.map(function(val, key) {
@@ -46176,6 +46235,57 @@
 	  })
 	}
 
+
+/***/ },
+/* 207 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(6);
+
+	var HEIBBox = React.createClass({displayName: "HEIBBox",
+		mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive],
+		getInitialState: function() {
+			this.store = window.store;
+	  },
+	  componentDidMount: function(){
+	  	var self = this;
+	  	var $box = jQuery('#heib_box_wrapper');
+	  	$box.on('heibUpdateBoxContent', HE.utils.getLock('heibUpdateBoxContent', function(){
+	  		var boxType = $box.data('heibType')
+	  		var boxUrl = $box.data('heibUrl')
+	  		if(boxType !== undefined && boxUrl !== undefined){
+	  			self.boxType = boxType;
+	  			self.boxUrl = boxUrl;
+	  			self.forceUpdate();
+	  		}
+	  	}, 50));
+	  },
+		getBoxLab: function(boxType){
+			var boxes = this.store.get('boxes');
+			var index
+			for(var key = 0; key < boxes.length; key ++){
+				if(boxes[key].name == boxType && (boxes[key].published === undefined || boxes[key].published === 1)){
+					index = key;
+				}			
+			}
+			if(index === undefined){
+				return null;
+			} else {
+				return this.store.link('boxes.' + index);
+			}
+		},
+		render: function(){
+			var boxLab = this.getBoxLab(this.boxType);
+			if(boxLab === null){
+				//no box lab found
+				return null;
+			} else {
+				return React.createElement(HE.UI.components.Block.Box.View, {"data-lab": boxLab, ref: "view"})
+			}
+		}
+	})
+
+	module.exports = HEIBBox;
 
 /***/ }
 /******/ ]);

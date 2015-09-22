@@ -942,7 +942,7 @@ HEUI.Box.View = React.createClass({
   render: function(){
     var childBlocks = this.getLab().get('blocks', []);
     var self = this;
-    return <div className="he-ViewBlock he-Box __View _Center" style={this.getStyle()} ref="block">
+    return <div className="he-ViewBlock he-Box __View" style={this.getStyle()} ref="block">
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {

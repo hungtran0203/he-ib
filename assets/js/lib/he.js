@@ -296,11 +296,63 @@ HE.utils = {
 		}
 		return ns;
 	},
-	showBox: function($ele, type){
-
+	setDelayState: function(stateName, cb, delay){
+		HE.cache.set('delayState_' + stateName, 1, delay);
+		setTimeout(function(){
+			var state = HE.cache.get('delayState_' + stateName);
+			if(state){
+				cb();
+			}
+		}, delay - 50);
+	},
+	clearDelayState: function(stateName){
+		HE.cache.forget('delayState_' + stateName);
 	}
 }
 ////////////////////////////////// Utils ///////////////////////////////////////
+
+////////////////////////////////// Box ///////////////////////////////////////
+HE.box = {
+	showBox: function($ele, type){
+		var offset = $ele.offset();
+		var $box = HE.box.findOrNewBox();
+		jQuery($box).css('top', offset.top + 20)
+				.css('left', offset.left)
+				.show()
+		jQuery($box).data('heibUrl', $ele[0].href)
+								.data('heibType', type)
+								.trigger('heibUpdateBoxContent')
+	},
+	hideBox: function(){
+		var $box = jQuery('#heib_box_wrapper');
+		HE.utils.setDelayState('mouseLeaveBox', function(){
+			$box.hide();
+		}, 700);
+	},
+	cancelHideBox: function(){
+		HE.utils.clearDelayState('mouseLeaveBox');
+	},
+	findOrNewBox: function(){
+		var HEIBBox = require('../components/HEIBBox.jsx');
+		var React = require('react');
+
+		var $box = jQuery('#heib_box_wrapper');
+		if(!$box.length) {
+			$box = jQuery('<div id="heib_box_wrapper"><div id="heib_box_content"></div></div>');
+			jQuery('body').append($box);
+			React.render(React.createElement(HEIBBox), document.getElementById('heib_box_content'));
+		}
+		//bind box events
+		$box.on('mouseenter', function(){
+			HE.box.cancelHideBox();
+		})
+		.on('mouseleave', function(){
+			HE.box.hideBox();
+		})
+		return $box;
+	}
+}
+////////////////////////////////// Box ///////////////////////////////////////
 
 ////////////////////////////////// url ///////////////////////////////////////
 HE.url = {
@@ -324,13 +376,20 @@ HE.url = {
 			})
 
 		})
+
 		jQuery('a', document).on('mouseenter', function(){
 			var $this = jQuery(this);
 			var boxType = $this.data('heibType');
 			if(boxType !== undefined){
-				HE.utils.showBox($this, boxType);
-				console.log('eeeeeeeeeeeeeeeeeeeeee')
+				HE.box.showBox($this, boxType);
 			}
+		})
+		.on('mouseleave', function(){
+			var $this = jQuery(this);
+			var boxType = $this.data('heibType');
+			if(boxType !== undefined){
+				HE.box.hideBox($this, boxType);
+			}			
 		});
 	},
 	matchUrl: function(url, pattern){

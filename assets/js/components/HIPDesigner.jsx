@@ -249,7 +249,7 @@ var HEIBApp = React.createClass({
 		  			</div>
     				<div className="he-DesignViewPort">
 		  				<div className="he-DesignCanvas">
-		  					{boxView}
+	  						{boxView}
 		  				</div>
     				</div>
     			</div>
