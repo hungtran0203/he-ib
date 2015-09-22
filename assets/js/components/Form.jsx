@@ -92,8 +92,9 @@ HEForm.Shortcode = React.createClass({
   mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.input],
   getShortcodeOptions: function(){
     var self = this;
+    var shortcodeType = self.props['sType']?self.props['sType']:'';
     if(self.shortcodeOptions === undefined){
-      HE.storage.get('shortcodes', null, function(data){
+      HE.storage.get('shortcodes', {type:shortcodeType}, function(data){
         var options;
         if(Array.isArray(data)){
           options = data;

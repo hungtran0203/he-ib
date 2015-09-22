@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "4e867afb67556042d78d"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "0e4f88f43f38159dff10"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -931,50 +931,40 @@
 			attrBlock.getLab().clear('____cachedContentKey');	//clear key to force update content
 		})
 
+		return configBlockData;
+	})
 
-		//setup shortcode block
+	/* user blocks */
+	HE.hook.add_filter('getListConfigBlocks__user', function(configBlockData){
+		//setup user shortcode block
 		configBlockData.contentBlocks.push({	type:'content', name:'shortcode', title:'Shortcode', contentAction: 'shortcode',
 																					options: {
 																						'shortcode': {
 																							componentName:'HE.UI.components.Form.Shortcode',
 																							value:'',
 																							title:'Shortcode',
+																							sType:'user'
 																						}
 																					}
 																				}
 																			);
-		//add action to display html block content
-		HE.hook.add_filter('fetchBlockContent__shortcode', function(content, block){
-			var shortcode = block.getLab().quite().get('options.shortcode.value');
-			HE.storage.get('shortcode', {shortcode:shortcode}, function(res){
-				var content = sanitizeShortcodeContent(res);
-				block.setContent(content);
-			})
-			return 'Loading ...';
-		})
-		function sanitizeShortcodeContent(content){
-			if(content == ''){
-				//empty content, just give hint text
-				content = '<span class="_Hint"><a href="javascript:void(0)" onclick="HE.utils.focusInput(\'option.html\');">Edit Content</a></span>'
-			}
-			return content;
-		}
-		//add action on update html block attributes
-		HE.hook.add_action('updateBlockAttribute__shortcode', function(attrBlock){
-			attrBlock.getLab().clear('____cachedContentKey');	//clear key to force update content
-		})
-
-
-		return configBlockData;
-	})
-
-	/* user blocks */
-	HE.hook.add_filter('getListConfigBlocks__user', function(configBlockData){
 		return configBlockData;
 	})
 
 	/* post blocks */
 	HE.hook.add_filter('getListConfigBlocks__post', function(configBlockData){
+		//setup user shortcode block
+		configBlockData.contentBlocks.push({	type:'content', name:'shortcode', title:'Shortcode', contentAction: 'shortcode',
+																					options: {
+																						'shortcode': {
+																							componentName:'HE.UI.components.Form.Shortcode',
+																							value:'',
+																							title:'Shortcode',
+																							sType:'post'
+																						}
+																					}
+																				}
+																			);
 		return configBlockData;
 	})
 
@@ -982,6 +972,43 @@
 	HE.hook.add_filter('getListConfigBlocks__category', function(configBlockData){
 		return configBlockData;
 	})
+
+	/* filter to append contextUrl to ajax requests */
+	HE.hook.add_filter('prepareAjaxData', function(data){
+		var contextUrl = HE.cache.get('heCurrentContextUrl');
+		if(contextUrl !== undefined){
+			data['contextUrl'] = contextUrl;
+		}
+		return data;
+	})
+
+	//add action to display shortcode block content
+	HE.hook.add_filter('fetchBlockContent__shortcode', function(content, block){
+		var shortcode = block.getLab().quite().get('options.shortcode.value');
+		HE.storage.get('shortcode', {shortcode:shortcode}, function(res){
+			var content = sanitizeShortcodeContent(res);
+			block.setContent(content);
+		})
+		return 'Loading ...';
+	})
+
+	function sanitizeShortcodeContent(content){
+		if(content == ''){
+			//empty content, just give hint text
+			content = '<span class="_Hint"><a href="javascript:void(0)" onclick="HE.utils.focusInput(\'option.html\');">Edit Content</a></span>'
+		}
+		return content;
+	}
+	//add action on update shortcode block attributes
+	HE.hook.add_action('updateBlockAttribute__shortcode', function(attrBlock){
+		//clear content cache 
+		var key = attrBlock.getLab().getDataId();
+	  var contextId = HE.cache.rememberForever('heCurrentContextId', 'context');
+	  HE.cache.forget('____cachedContentKey.' + contextId + '.' + key);
+	  //force update content
+	  attrBlock.getLab().refresh();
+	})
+
 
 	///////////////////////////////////////// end define hooks ///////////////////////////////////////////
 	var HEIBApp = React.createClass({displayName: "HEIBApp",
@@ -22472,7 +22499,9 @@
 		},
 		ajax: function(params, successCb, failCb){
 			var data = jQuery.extend(true, {}, {'action': 'heib_ajax'}, params)
-			//setup midleware hook
+			//setup midleware hooks
+			data = HE.hook.apply_filters('prepareAjaxData', data);
+
 			jQuery.ajax({
 	        url: ajaxurl,
 	        data: data,
@@ -22481,7 +22510,9 @@
 	            var res = jQuery.parseJSON(data);
 	            if(res.error){
 	            	console.log(res.errMsg);
-	            	failCb(res)
+	            	if(typeof failCb === 'function'){
+		            	failCb(res)
+	            	}
 	            } else {
 	            	if(typeof successCb === 'function'){
 		            	successCb(res);
@@ -22658,7 +22689,17 @@
 		},
 		clearDelayState: function(stateName){
 			HE.cache.forget('delayState_' + stateName);
-		}
+		},
+		hashCode: function(str) {
+		  var hash = 0, i, chr, len;
+		  if (str.length == 0) return hash;
+		  for (i = 0, len = str.length; i < len; i++) {
+		    chr   = str.charCodeAt(i);
+		    hash  = ((hash << 5) - hash) + chr;
+		    hash |= 0; // Convert to 32bit integer
+		  }
+		  return hash;
+		}	
 	}
 	////////////////////////////////// Utils ///////////////////////////////////////
 
@@ -22780,6 +22821,8 @@
 				//data expired or not set, call valFn to update cache data
 				if(typeof valFn === 'function'){
 					val = valFn();
+				} else {
+					val = valFn;
 				}
 				HE.cache.set(key, val, lifeTime);
 			}
@@ -23212,6 +23255,31 @@
 	    } else {
 	      return null
 	    }
+	  }
+	  this.getDataId = function(){
+	    if(this.dataId === undefined){
+	      //generate dataId
+	      var labDataIds = HE.cache.rememberForever('heLABDataIds', {});
+	      var val = this.quite().getVal();
+	      var id;
+	      //search and update dataIds cache
+	      for(var k in labDataIds){
+	        if(labDataIds[k] === val){
+	          id = k;
+	          break;
+	        }
+	        //clean up id if deleted
+	        if(labDataIds[k] === undefined){
+	          delete labDataIds[k];
+	        }
+	      }
+	      if(id === undefined){
+	        id = '$id_' + HE.utils.getTabIndex();
+	        labDataIds[id] = val;
+	      }
+	      this.dataId = id;
+	    }
+	    return this.dataId;
 	  }
 	  this.setState = function(key, val){
 	      this.states[key] = val;
@@ -26029,8 +26097,9 @@
 	  mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.input],
 	  getShortcodeOptions: function(){
 	    var self = this;
+	    var shortcodeType = self.props['sType']?self.props['sType']:'';
 	    if(self.shortcodeOptions === undefined){
-	      HE.storage.get('shortcodes', null, function(data){
+	      HE.storage.get('shortcodes', {type:shortcodeType}, function(data){
 	        var options;
 	        if(Array.isArray(data)){
 	          options = data;
@@ -26513,16 +26582,11 @@
 	    if(labData === null) {
 	      return '__null';
 	    }
-	    var key;
-	    var key = this.getLab().quite().get('____cachedContentKey');
-	    if(key === undefined || HE.cache.get(key, undefined) === undefined){
-	      key = this.generateCachedContentKey();
-	      this.getLab().quite().set('____cachedContentKey', key)
-	    }
-	    return key;
-	  },
-	  generateCachedContentKey: function(){
-	    return '____cachedContentKey.' + this.getTabIndex() + '.t' + Date.now();
+	    var key = this.getLab().getDataId();
+
+	    //content cache key is compound of data id and context id
+	    var contextId = HE.cache.rememberForever('heCurrentContextId', 'context');
+	    return '____cachedContentKey.' + contextId + '.' + key;
 	  },
 	  getContentLifeTime: function(){
 	    if(!this.contentLifeTime){
@@ -46253,6 +46317,10 @@
 	  	$box.on('heibUpdateBoxContent', HE.utils.getLock('heibUpdateBoxContent', function(){
 	  		var boxType = $box.data('heibType')
 	  		var boxUrl = $box.data('heibUrl')
+	  		//set current context
+	  		HE.cache.set('heCurrentContextId', HE.utils.hashCode(boxUrl));
+	  		HE.cache.set('heCurrentContextUrl', boxUrl);
+
 	  		if(boxType !== undefined && boxUrl !== undefined){
 	  			self.boxType = boxType;
 	  			self.boxUrl = boxUrl;

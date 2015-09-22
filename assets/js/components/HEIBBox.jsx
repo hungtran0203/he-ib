@@ -11,6 +11,10 @@ var HEIBBox = React.createClass({
   	$box.on('heibUpdateBoxContent', HE.utils.getLock('heibUpdateBoxContent', function(){
   		var boxType = $box.data('heibType')
   		var boxUrl = $box.data('heibUrl')
+  		//set current context
+  		HE.cache.set('heCurrentContextId', HE.utils.hashCode(boxUrl));
+  		HE.cache.set('heCurrentContextUrl', boxUrl);
+
   		if(boxType !== undefined && boxUrl !== undefined){
   			self.boxType = boxType;
   			self.boxUrl = boxUrl;

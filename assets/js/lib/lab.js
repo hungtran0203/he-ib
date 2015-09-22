@@ -38,6 +38,31 @@ function LAB(ns, data, binder, pagingCollection, states){
       return null
     }
   }
+  this.getDataId = function(){
+    if(this.dataId === undefined){
+      //generate dataId
+      var labDataIds = HE.cache.rememberForever('heLABDataIds', {});
+      var val = this.quite().getVal();
+      var id;
+      //search and update dataIds cache
+      for(var k in labDataIds){
+        if(labDataIds[k] === val){
+          id = k;
+          break;
+        }
+        //clean up id if deleted
+        if(labDataIds[k] === undefined){
+          delete labDataIds[k];
+        }
+      }
+      if(id === undefined){
+        id = '$id_' + HE.utils.getTabIndex();
+        labDataIds[id] = val;
+      }
+      this.dataId = id;
+    }
+    return this.dataId;
+  }
   this.setState = function(key, val){
       this.states[key] = val;
       //refresh data on change state

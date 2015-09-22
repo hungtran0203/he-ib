@@ -340,16 +340,11 @@ var blockContentMixins = {
     if(labData === null) {
       return '__null';
     }
-    var key;
-    var key = this.getLab().quite().get('____cachedContentKey');
-    if(key === undefined || HE.cache.get(key, undefined) === undefined){
-      key = this.generateCachedContentKey();
-      this.getLab().quite().set('____cachedContentKey', key)
-    }
-    return key;
-  },
-  generateCachedContentKey: function(){
-    return '____cachedContentKey.' + this.getTabIndex() + '.t' + Date.now();
+    var key = this.getLab().getDataId();
+
+    //content cache key is compound of data id and context id
+    var contextId = HE.cache.rememberForever('heCurrentContextId', 'context');
+    return '____cachedContentKey.' + contextId + '.' + key;
   },
   getContentLifeTime: function(){
     if(!this.contentLifeTime){

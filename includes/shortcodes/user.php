@@ -1,7 +1,13 @@
 <?php
 // Define all user shortcode
 function heib_get_user(){
-	return wp_get_current_user();
+	global $heib__Response;
+	if(!is_null($heib__Response) && is_a($heib__Response, 'HEIBResponse') ){
+		$query = $heib__Response->query();
+		return wp_get_current_user();
+	} else {
+		return wp_get_current_user();
+	}
 }
 //////////////////// username ///////////////////////////
 /* 
@@ -9,7 +15,6 @@ function heib_get_user(){
 */
 HEIBShortcode::add_shortcode('username', function(){
 	$user = heib_get_user();
-
 	return $user->display_name;	
 }, 'user');
 //////////////////// username ///////////////////////////

@@ -121,7 +121,9 @@ HE.utils = {
 	},
 	ajax: function(params, successCb, failCb){
 		var data = jQuery.extend(true, {}, {'action': 'heib_ajax'}, params)
-		//setup midleware hook
+		//setup midleware hooks
+		data = HE.hook.apply_filters('prepareAjaxData', data);
+
 		jQuery.ajax({
         url: ajaxurl,
         data: data,
@@ -130,7 +132,9 @@ HE.utils = {
             var res = jQuery.parseJSON(data);
             if(res.error){
             	console.log(res.errMsg);
-            	failCb(res)
+            	if(typeof failCb === 'function'){
+	            	failCb(res)
+            	}
             } else {
             	if(typeof successCb === 'function'){
 	            	successCb(res);
@@ -307,7 +311,17 @@ HE.utils = {
 	},
 	clearDelayState: function(stateName){
 		HE.cache.forget('delayState_' + stateName);
-	}
+	},
+	hashCode: function(str) {
+	  var hash = 0, i, chr, len;
+	  if (str.length == 0) return hash;
+	  for (i = 0, len = str.length; i < len; i++) {
+	    chr   = str.charCodeAt(i);
+	    hash  = ((hash << 5) - hash) + chr;
+	    hash |= 0; // Convert to 32bit integer
+	  }
+	  return hash;
+	}	
 }
 ////////////////////////////////// Utils ///////////////////////////////////////
 
@@ -429,6 +443,8 @@ HE.cache = {
 			//data expired or not set, call valFn to update cache data
 			if(typeof valFn === 'function'){
 				val = valFn();
+			} else {
+				val = valFn;
 			}
 			HE.cache.set(key, val, lifeTime);
 		}

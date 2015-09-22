@@ -168,10 +168,14 @@ class HEIBResponse extends stdClass {
 	protected $query;
 
 	public function __construct($query = null){
+		global $heib__Response;
 		if(is_null($query)){
 			$query = $_REQUEST;
 		}
 		$this->query = $query;
+
+		//setup global  response
+		$heib__Response = $this;
 		// parent::__construct();
 	}
 	public function query(){
@@ -196,3 +200,4 @@ class HEIBResponse extends stdClass {
 }
 
 $GLOBALS['heib'] = HEIBApp::getInstance();
+$GLOBALS['heib__Response'] = null;
