@@ -90,7 +90,7 @@ class HEIBApp {
 	}
 	
 	private function frontendHooks(){
-	
+		HEIBApp::frontend_enqueue_scripts();
 	}
 
 	private function apiHooks(){
@@ -129,10 +129,18 @@ class HEIBApp {
 	}
 	
 	public static function admin_enqueue_scripts(){
-		wp_enqueue_script( 'heibadmin', plugins_url( '/dist/bundle.js' , __FILE__ ), array( 'jquery' ));
+		wp_enqueue_script( 'heibadmin', plugins_url( '/dist/backend.bundle.js' , __FILE__ ), array( 'jquery' ));
 		wp_enqueue_script( 'heibadmin_config', plugins_url( '/assets/js/config.js' , __FILE__ ), array( 'heibadmin' ));
 	}
 	
+	public static function frontend_enqueue_scripts(){
+		add_action('wp_head',function(){
+			echo '<script type="text/javascript"> var ajaxurl = "' . admin_url('admin-ajax.php') .'"</script>';
+		});
+		wp_enqueue_script( 'heibfrontend', plugins_url( '/dist/frontend.bundle.js' , __FILE__ ), array( 'jquery' ));
+		wp_enqueue_script( 'heibfrontend_config', plugins_url( '/assets/js/config.js' , __FILE__ ), array( 'heibfrontend' ));
+	}
+
 	public static function admin_content(){
 		echo '<div id="heib_wrapper"></div>';
 		

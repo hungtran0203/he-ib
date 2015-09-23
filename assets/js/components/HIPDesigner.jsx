@@ -4,129 +4,95 @@ var Draggable = require('react-draggable');
 
 var HE = require('../lib/he.js');
 
+jQuery(document).on('he_inited', function(){
+	//load required mixins
+	HE.UI.setMixins('lab', require('../mixins/lab.js'))
+	HE.UI.setMixins('common', require('../mixins/common.js'))
+	HE.UI.setMixins('input', require('../mixins/input.js'))
+	HE.UI.setMixins('user', require('../mixins/user.js'))
+	HE.UI.setMixins('responsive', require('../mixins/responsive.js'))
+	HE.UI.setMixins('blockContent', require('../mixins/blockContent.js'))
+
+	//load required components
+	HE.UI.setComponent('Form', require('../components/Form.jsx'))
+	HE.UI.setComponent('Grid', require('../components/Grid.jsx'))
+	HE.UI.setComponent('Block', require('../components/Block.jsx'))
+	HE.UI.setComponent('Panel', require('../components/Panel.jsx'))
+
+	///////////////////////////////////////// begin define hooks ///////////////////////////////////////////
+
+	/* default blocks */
+	HE.hook.add_filter('getListConfigBlocks', function(configBlockData){
+		//load absolute container
+		configBlockData.containerBlocks.push({type:'container.absolute', name:'container_absolute', title:'Absolute Container'})
+		//load vertical container
+		configBlockData.containerBlocks.push({type:'container.vertical', name:'container_vertical', title:'Vertical Container'})
+		//load horizontal container
+		configBlockData.containerBlocks.push({type:'container.horizontal', name:'container_horizontal', title:'Horizontal Container'})
+
+		//setup html block
+		configBlockData.contentBlocks.push({	type:'content', name:'html', title:'Html', contentAction: 'html',
+																					options: {
+																						'html': {
+																							componentName:'HE.UI.components.Form.TextArea',
+																							value:'',
+																							title:'Html',
+																							name:'option.html',
+																						}
+																					}
+																				}
+																			);
+		return configBlockData;
+	})
+
+	/* user blocks */
+	HE.hook.add_filter('getListConfigBlocks__user', function(configBlockData){
+		//setup user shortcode block
+		configBlockData.contentBlocks.push({	type:'content', name:'shortcode', title:'Shortcode', contentAction: 'shortcode',
+																					options: {
+																						'shortcode': {
+																							componentName:'HE.UI.components.Form.Shortcode',
+																							value:'',
+																							title:'Shortcode',
+																							sType:'user'
+																						}
+																					}
+																				}
+																			);
+		return configBlockData;
+	})
+
+	/* post blocks */
+	HE.hook.add_filter('getListConfigBlocks__post', function(configBlockData){
+		//setup user shortcode block
+		configBlockData.contentBlocks.push({	type:'content', name:'shortcode', title:'Shortcode', contentAction: 'shortcode',
+																					options: {
+																						'shortcode': {
+																							componentName:'HE.UI.components.Form.Shortcode',
+																							value:'',
+																							title:'Shortcode',
+																							sType:'post'
+																						}
+																					}
+																				}
+																			);
+		return configBlockData;
+	})
+
+	/* category blocks */
+	HE.hook.add_filter('getListConfigBlocks__category', function(configBlockData){
+		return configBlockData;
+	})
+
+	//load default hooks
+	require('../lib/hook.js');
+	///////////////////////////////////////// end define hooks ///////////////////////////////////////////
+
+});
+
+//init Halo Engine
 HE.init();
 
-///////////////////////////////////////// begin define hooks ///////////////////////////////////////////
-
-/* default blocks */
-HE.hook.add_filter('getListConfigBlocks', function(configBlockData){
-	//load absolute container
-	configBlockData.containerBlocks.push({type:'container.absolute', name:'container_absolute', title:'Absolute Container'})
-	//load vertical container
-	configBlockData.containerBlocks.push({type:'container.vertical', name:'container_vertical', title:'Vertical Container'})
-	//load horizontal container
-	configBlockData.containerBlocks.push({type:'container.horizontal', name:'container_horizontal', title:'Horizontal Container'})
-
-	//setup html block
-	configBlockData.contentBlocks.push({	type:'content', name:'html', title:'Html', contentAction: 'html',
-																				options: {
-																					'html': {
-																						componentName:'HE.UI.components.Form.TextArea',
-																						value:'',
-																						title:'Html',
-																						name:'option.html',
-																					}
-																				}
-																			}
-																		);
-	//add action to display html block content
-	HE.hook.add_filter('fetchBlockContent__html', function(content, block){
-		content = block.getLab().quite().get('options.html.value');
-		content = sanitizeHtmlContent(content);
-		return content;
-	})
-	function sanitizeHtmlContent(content){
-		if(content == ''){
-			//empty content, just give hint text
-			content = '<span class="_Hint"><a href="javascript:void(0)" onclick="HE.utils.focusInput(\'option.html\');">Edit Content</a></span>'
-		}
-		return content;
-	}
-	//add action on update html block attributes
-	HE.hook.add_action('updateBlockAttribute__html', function(attrBlock){
-		attrBlock.getLab().clear('____cachedContentKey');	//clear key to force update content
-	})
-
-	return configBlockData;
-})
-
-/* user blocks */
-HE.hook.add_filter('getListConfigBlocks__user', function(configBlockData){
-	//setup user shortcode block
-	configBlockData.contentBlocks.push({	type:'content', name:'shortcode', title:'Shortcode', contentAction: 'shortcode',
-																				options: {
-																					'shortcode': {
-																						componentName:'HE.UI.components.Form.Shortcode',
-																						value:'',
-																						title:'Shortcode',
-																						sType:'user'
-																					}
-																				}
-																			}
-																		);
-	return configBlockData;
-})
-
-/* post blocks */
-HE.hook.add_filter('getListConfigBlocks__post', function(configBlockData){
-	//setup user shortcode block
-	configBlockData.contentBlocks.push({	type:'content', name:'shortcode', title:'Shortcode', contentAction: 'shortcode',
-																				options: {
-																					'shortcode': {
-																						componentName:'HE.UI.components.Form.Shortcode',
-																						value:'',
-																						title:'Shortcode',
-																						sType:'post'
-																					}
-																				}
-																			}
-																		);
-	return configBlockData;
-})
-
-/* category blocks */
-HE.hook.add_filter('getListConfigBlocks__category', function(configBlockData){
-	return configBlockData;
-})
-
-/* filter to append contextUrl to ajax requests */
-HE.hook.add_filter('prepareAjaxData', function(data){
-	var contextUrl = HE.cache.get('heCurrentContextUrl');
-	if(contextUrl !== undefined){
-		data['contextUrl'] = contextUrl;
-	}
-	return data;
-})
-
-//add action to display shortcode block content
-HE.hook.add_filter('fetchBlockContent__shortcode', function(content, block){
-	var shortcode = block.getLab().quite().get('options.shortcode.value');
-	HE.storage.get('shortcode', {shortcode:shortcode}, function(res){
-		var content = sanitizeShortcodeContent(res);
-		block.setContent(content);
-	})
-	return 'Loading ...';
-})
-
-function sanitizeShortcodeContent(content){
-	if(content == ''){
-		//empty content, just give hint text
-		content = '<span class="_Hint"><a href="javascript:void(0)" onclick="HE.utils.focusInput(\'option.html\');">Edit Content</a></span>'
-	}
-	return content;
-}
-//add action on update shortcode block attributes
-HE.hook.add_action('updateBlockAttribute__shortcode', function(attrBlock){
-	//clear content cache 
-	var key = attrBlock.getLab().getDataId();
-  var contextId = HE.cache.rememberForever('heCurrentContextId', 'context');
-  HE.cache.forget('____cachedContentKey.' + contextId + '.' + key);
-  //force update content
-  attrBlock.getLab().refresh();
-})
-
-
-///////////////////////////////////////// end define hooks ///////////////////////////////////////////
 var HEIBApp = React.createClass({
 		mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive],
 		getInitialState: function() {

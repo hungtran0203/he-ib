@@ -20,32 +20,14 @@ HE.UI = {
   getMixins: function(name){
 		return HE.UI.mixins[name];
   },
-  loadMixins: function(){
-		HE.UI.setMixins('lab', require('../mixins/lab.js'))
-		HE.UI.setMixins('common', require('../mixins/common.js'))
-		HE.UI.setMixins('input', require('../mixins/input.js'))
-		HE.UI.setMixins('user', require('../mixins/user.js'))
-		HE.UI.setMixins('responsive', require('../mixins/responsive.js'))
-  },
   setComponent: function(name, component){
     if(!HE.UI.components){HE.UI.components = {};}
     if(!HE.UI.components[name]) {
       HE.UI.components[name] = component;
     }
   },
-  loadComponents: function(){
-		HE.UI.setComponent('Form', require('../components/Form.jsx'))
-		HE.UI.setComponent('Grid', require('../components/Grid.jsx'))
-		HE.UI.setComponent('Block', require('../components/Block.jsx'))
-		HE.UI.setComponent('Panel', require('../components/Panel.jsx'))
-
-  },
   init: function(){
   	if(!HE.UI.inited){
-  		//load mixins
-    	HE.UI.loadMixins();
-    	//load components
-    	HE.UI.loadComponents();
     	HE.UI.inited = true;      		
   	}
   },
@@ -349,7 +331,6 @@ HE.box = {
 	findOrNewBox: function(){
 		var HEIBBox = require('../components/HEIBBox.jsx');
 		var React = require('react');
-
 		var $box = jQuery('#heib_box_wrapper');
 		if(!$box.length) {
 			$box = jQuery('<div id="heib_box_wrapper"><div id="heib_box_content"></div></div>');
@@ -377,17 +358,19 @@ HE.url = {
 	},
 	bindUrl: function(){
 		HE.url.getBoxPermalinks(function(permalinks){
-			jQuery('a').each(function(){
-				var href = this.href;
-				if(href.indexOf(permalinks.home) === 0){
-					for(var type in permalinks){
-						if(type !== 'home' && HE.url.matchUrl(href, permalinks[type])){
-							jQuery(this).data('heibType', type);
-							return;
+			if(jQuery(this).data('heibType') === undefined){
+				jQuery('a').each(function(){
+					var href = this.href;
+					if(href.indexOf(permalinks.home) === 0){
+						for(var type in permalinks){
+							if(type !== 'home' && HE.url.matchUrl(href, permalinks[type])){
+								jQuery(this).data('heibType', type);
+								return;
+							}
 						}
 					}
-				}
-			})
+				})				
+			}
 
 		})
 

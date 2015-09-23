@@ -1,9 +1,51 @@
 var React = require('react');
 
+var HE = require('../lib/he.js');
+
+jQuery(document).on('he_inited', function(){
+	//load required mixins
+	HE.UI.setMixins('lab', require('../mixins/lab.js'))
+	HE.UI.setMixins('common', require('../mixins/common.js'))
+	HE.UI.setMixins('responsive', require('../mixins/responsive.js'))
+	HE.UI.setMixins('blockContent', require('../mixins/blockContent.js'))
+
+	//load required components
+	HE.UI.setComponent('Block', require('../components/BlockView.jsx'))
+
+	//load default hooks
+	require('../lib/hook.js');
+
+});
+
+//init Halo Engine
+HE.init();
+
 var HEIBBox = React.createClass({
 	mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive],
 	getInitialState: function() {
+		this.loadIBLab();
+		// this.store = window.store;
+  },
+  loadIBLab: function(){
+  	var self = this
+		// var storeDataStr = localStorage.getItem('heStore', null);
+		var storeDataStr = null;
+		window.store = HE.lab.init({boxes: []});
+		//get boxes data
+
+		HE.storage.get('boxes', null, function(res){
+			if(res && res.boxes){
+				window.store.quite().set('boxes', res.boxes);
+				self.forceUpdate();
+			}
+		})
+
+		window.HEState = HE.lab.init({});
+
+		//assign labs
 		this.store = window.store;
+		this.lab = window.store;
+		this.HEState = window.HEState;
   },
   componentDidMount: function(){
   	var self = this;
@@ -46,5 +88,6 @@ var HEIBBox = React.createClass({
 		}
 	}
 })
+
 
 module.exports = HEIBBox;
