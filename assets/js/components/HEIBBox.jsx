@@ -61,6 +61,11 @@ var HEIBBox = React.createClass({
   			self.boxType = boxType;
   			self.boxUrl = boxUrl;
   			self.forceUpdate();
+  			//update box position reflect its dimension
+  			var boxTarget = $box.data('heibTarget')
+  			if(boxTarget){
+  				HE.box.updateBoxPosition(boxTarget, jQuery(this));	
+  			}
   		}
   	}, 50));
   },

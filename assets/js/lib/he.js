@@ -303,27 +303,95 @@ HE.utils = {
 	    hash |= 0; // Convert to 32bit integer
 	  }
 	  return hash;
-	}	
+	},
+	getScreenSize: function(){
+		// var width = window.innerWidth ||
+		//                       document.documentElement.clientWidth ||
+		//                       document.body.clientWidth ||
+		//                       document.body.offsetWidth;
+		var width = jQuery(window).width();
+		var height = jQuery(window).height();
+		return {width: width, height: height};
+	},
 }
 ////////////////////////////////// Utils ///////////////////////////////////////
 
 ////////////////////////////////// Box ///////////////////////////////////////
 HE.box = {
+	updateBoxPosition: function($ele, $box){
+		var bottomMargin = 28;	//margin between ele and box
+		var topMargin = 18;	//margin between ele and box
+		var offset = $ele.offset();
+		var screenSize = HE.utils.getScreenSize();
+		//get ele position related to  window
+		var elePosWindow = {top: offset.top - jQuery(window).scrollTop(), left: offset.left - jQuery(window).scrollLeft()};
+		var placement, direction, top, left
+		$box.css('visibility', 'hidden');
+		$box.show();
+		var $content = $box.find('.he-Box.__View')
+		//calculate placement
+		//rule 1: prefer 'bottom'
+		if(elePosWindow.top < (screenSize.height / 2)){
+			placement = 'bottom';
+			top = offset.top + bottomMargin
+		} else {
+			placement = 'top';
+			top = offset.top - topMargin - $content.height()
+		}
+		//calculate box top position
+		
+		//rule 2: prefer 'right'
+		if(elePosWindow.left < (screenSize.width /2)){
+			direction = 'right';
+			left = offset.left
+		} else {
+			direction = 'left';
+			if($ele.width() > $content.width()){
+				left = offset.left
+			} else {
+				left = offset.left + $ele.width() - $content.width()
+			}
+		}
+
+		//rule 3: min - max left
+		left = Math.min(left, jQuery(window).scrollLeft() + screenSize.width - $content.width() - 4);
+		left = Math.max(jQuery(window).scrollLeft() + 4, left);
+
+		//rule 4: min top
+		top = Math.max(0, top);
+
+		//rule 5: arrow pos
+		var arrowLeft = offset.left - left + 14;
+
+		var $arrow = $box.find('.__Arrow');
+		$arrow.removeClass('_bottom _top')
+					.addClass('_' + placement)
+					.css('left', arrowLeft);
+
+		$box.css('left', left)
+				.css('top', top)
+		$box.css('visibility', 'visible');
+
+	},
 	showBox: function($ele, type){
 		var offset = $ele.offset();
 		var $box = HE.box.findOrNewBox();
-		jQuery($box).css('top', offset.top + 20)
-				.css('left', offset.left)
-				.show()
+
+		//reset min-width, min-height in case auto size set it
+		$box.find('.he-Box.__View').css('min-height', '').css('min-width', '')
+
+		HE.box.updateBoxPosition($ele, $box);
+		jQuery($box).show()
 		jQuery($box).data('heibUrl', $ele[0].href)
 								.data('heibType', type)
+								.data('heibTarget', $ele)
 								.trigger('heibUpdateBoxContent')
 	},
 	hideBox: function(){
 		var $box = jQuery('#heib_box_wrapper');
 		HE.utils.setDelayState('mouseLeaveBox', function(){
 			$box.hide();
-		}, 700);
+		}, 1000);
 	},
 	cancelHideBox: function(){
 		HE.utils.clearDelayState('mouseLeaveBox');
@@ -336,14 +404,14 @@ HE.box = {
 			$box = jQuery('<div id="heib_box_wrapper"><div id="heib_box_content"></div></div>');
 			jQuery('body').append($box);
 			React.render(React.createElement(HEIBBox), document.getElementById('heib_box_content'));
+			//bind box events
+			$box.on('mouseenter', function(){
+				HE.box.cancelHideBox();
+			})
+			.on('mouseleave', function(){
+				HE.box.hideBox();
+			})
 		}
-		//bind box events
-		$box.on('mouseenter', function(){
-			HE.box.cancelHideBox();
-		})
-		.on('mouseleave', function(){
-			HE.box.hideBox();
-		})
 		return $box;
 	}
 }
@@ -378,6 +446,7 @@ HE.url = {
 			var $this = jQuery(this);
 			var boxType = $this.data('heibType');
 			if(boxType !== undefined){
+				HE.box.cancelHideBox();
 				HE.box.showBox($this, boxType);
 			}
 		})

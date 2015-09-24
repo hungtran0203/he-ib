@@ -45,10 +45,30 @@ HEUI.Box.View = React.createClass({
   getDefaultStyle: function(){
     return {width:'100px', height: '100px'};
   },
+  autoSize: function(){
+  	var $this = jQuery(React.findDOMNode(this))
+  	var minHeight = $this.height();
+  	var minWidth = $this.width();
+  	$this.children().each(function(){
+  		var $child = jQuery(this);
+  		var pos = $child.position();
+  		minHeight = Math.max(minHeight, pos.top + $child.height() + 8)
+  		minWidth = Math.max(minWidth, pos.left + $child.width() + 8)
+  		$this.css('min-height', minHeight)
+  				.css('min-width', minWidth)
+  	})  	
+  },
+  componentDidUpdate: function(){
+  	this.autoSize()
+  },
+  componentDidMount: function(){
+  	this.autoSize()
+  },
   render: function(){
     var childBlocks = this.getLab().get('blocks', []);
     var self = this;
     return <div className="he-ViewBlock he-Box __View" style={this.getStyle()} ref="block">
+    				<div className="__Arrow _bottom"></div>
             {
               childBlocks.length?
               childBlocks.map(function(val, key) {

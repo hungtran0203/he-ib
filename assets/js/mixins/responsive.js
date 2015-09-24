@@ -24,10 +24,7 @@ var responsiveMixins = {
 		  detectDisplayMode: function(){
 		    //support 5 modes: xxs, xs, sm, md, lg
 		    var mode = 4;
-		    var actualWidth = window.innerWidth ||
-		                      document.documentElement.clientWidth ||
-		                      document.body.clientWidth ||
-		                      document.body.offsetWidth;
+		    var actualWidth = HE.utils.getScreenSize().width;
 		    if(actualWidth >= 1200){
 		      mode = 4;
 		    } else if(actualWidth >= 992) {

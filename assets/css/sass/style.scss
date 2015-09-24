@@ -5,6 +5,9 @@ $include-html-global-classes: false;
 
 $microformat-padding: rem-calc(10 12);
 
+$default-direction: 'left';
+$opposite-direction: 'right';
+
 @import '../../../bower_components/foundation/scss/foundation.scss'; 
 
 ////////////////////////////// mixins	/////////////////////////////////////////
@@ -101,7 +104,6 @@ $he-panel-bg: #FFFFFF;
 }
 
 .he-ViewBlock {
-
 }
 
 .he-Ruler__Horizontal {
@@ -188,6 +190,72 @@ $he-panel-bg: #FFFFFF;
 	}
 }
 
+@mixin css-triangle-border($triangle-size, $triangle-color, $triangle-direction) {
+  @if $triangle-direction == bottom {	
+		&:before {
+	    @include css-triangle($triangle-size, $triangle-color, $triangle-direction);
+	    position: absolute;
+	    top: -($triangle-size - 1);
+	    left: -($triangle-size);
+	    z-index: 89;
+	  }
+	  @include css-triangle($triangle-size, #ccc, $triangle-direction);
+	  position: absolute;
+	  top: -($triangle-size * 2);
+	  left: ($triangle-size * 2) - 2;
+	  z-index: 88;
+	}
+
+	@if $triangle-direction == $default-float {
+		&:before {
+	    @include css-triangle($triangle-size, $triangle-color, $triangle-direction);
+	    position: absolute;
+	    top: -($triangle-size);
+	    #{$opposite-direction}: -($triangle-size - 1);
+	    z-index: 89;
+	  }
+	  @include css-triangle($triangle-size, #ccc, $triangle-direction);
+	  position: absolute;
+	  #{$default-float}: auto;
+	  top: ($triangle-size * 2) + 2;
+	  #{$opposite-direction}: -($triangle-size * 2);
+	  z-index: 88;
+	}
+
+	@if $triangle-direction == $opposite-direction {
+		&:before {
+	    @include css-triangle($triangle-size, $triangle-color, $triangle-direction);
+	    position: absolute;
+	    top: -($triangle-size);
+	    #{$default-float}: -($triangle-size - 1);
+	    z-index: 89;
+	  }
+	  @include css-triangle($triangle-size, #ccc, $triangle-direction);
+	  position: absolute;
+	  #{$opposite-direction}: auto;
+	  top: ($triangle-size * 2) + 2;
+	  #{$default-float}: -($triangle-size * 2);
+	  z-index: 88;
+	}
+
+	@if $triangle-direction == top {
+		&:before {
+	    @include css-triangle($triangle-size, $triangle-color, $triangle-direction);
+	    position: absolute;
+		  top: auto;
+	    bottom: -($triangle-size - 1);
+	    left: -($triangle-size);
+	    z-index: 89;
+	  }
+	  @include css-triangle($triangle-size, #ccc, $triangle-direction);
+	  position: absolute;
+	  top: auto;
+	  bottom: -($triangle-size * 2);
+	  left: ($triangle-size * 2) - 2;
+	  z-index: 88;
+	}
+}
+
 .he-Box{
 	position: absolute;
 	background-color: #f8f8f8;
@@ -195,6 +263,20 @@ $he-panel-bg: #FFFFFF;
 		border: solid 1px;
 	  border-color: #ccc;
 	}
+  .__Arrow {
+  	&._bottom{
+  		@include css-triangle-border(8px, whitesmoke, 'bottom');
+  	}
+  	&._top{
+  		@include css-triangle-border(8px, whitesmoke, 'top');
+  	}
+  	&._#{$default-direction}{
+  		@include css-triangle-border(8px, whitesmoke, $default-direction);
+  	}
+  	&._#{$opposite-direction}{
+  		@include css-triangle-border(8px, whitesmoke, $opposite-direction);
+  	}
+  }
 }
 .he-BoxList {
 	.__List {
