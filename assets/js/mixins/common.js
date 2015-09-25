@@ -1,10 +1,14 @@
 var React = require('react/addons');
 var commonMixins = {
       //bind change on a HEState
-      bindHEState: function(stateName){
+      bindHEState: function(stateName, cb){
         var self = this;
         HE.hook.add_action('changedHEState__' + stateName, function(){
-          self.forceUpdate();
+          if(typeof cb === 'function'){
+            cb()
+          } else {
+            self.forceUpdate();  
+          }
         })
       },
   		getClass: function(className){

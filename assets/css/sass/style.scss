@@ -73,11 +73,11 @@ $he-panel-bg: #FFFFFF;
 
 .he-DesignViewPort {
   background-color: whitesmoke;
+  overflow: hidden;
+	border: solid 1px #ccc;
 }
 
 .he-DesignCanvas {
-	border: solid 1px;
-  border-color: #ccc;
   padding: 5px;
   position: relative;
   width: 100%;
@@ -406,6 +406,61 @@ $he-panel-bg: #FFFFFF;
 		border-color: blue;
 	}
 }
+
+#wp-heib-editor-wrap {
+
+	display: none;
+}
+
+.mce-container .he-DesignToolBar {
+	border: 1px solid #ccc;
+	border-bottom: 0px;
+	padding: 3px;
+	button:disabled {
+		color: #bbb;
+	}
+}
+
+.he-groupBtn {
+	.button {
+		margin: 0px 5px;
+	}
+}
+
+.form-group {
+	margin-bottom: 8px;
+	position:relative;
+	&:last-child {
+		margin-bottom: 0px;
+	}
+	label {
+		display: block;
+	}
+	textarea {
+		width: 100%;
+		min-height: 60px;
+	}
+	.he-editor-btn {
+		position: absolute;
+		transform: translateY(-100%);
+		right: 0px;
+	}
+}
+
+.he-hideEditor-btn {
+	transform: translateY(50%);
+}
+
+.he-inline-form {
+	.form-group {
+		display: inline;
+	}
+	margin-bottom: 8px;
+	&:last-child {
+		margin-bottom: 0px;
+	}	
+}
+
 .he-hidden {
 	display: none;
 }

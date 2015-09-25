@@ -462,6 +462,13 @@ HEUI.Attributes = React.createClass({
         self.setLab(lab);
       }
     })
+    //automatically update textarea size
+    var $this = jQuery(React.findDOMNode(this))
+    HE.form.textarea.autosize($this)
+  },
+  componentDidUpdate: function(){
+    var $this = jQuery(React.findDOMNode(this))
+    HE.form.textarea.autosize($this)    
   },
   handleChangeStyles: function(event){
     var inputName = event.target.name
@@ -550,10 +557,10 @@ HEUI.Attributes = React.createClass({
               <div>
               {jQuery.map(attributes, function(value, key){
                 if(self.getLab()){
-                  return (<div key={key}>
+                  return (<div className="he-inline-form" key={key}>
                         <HE.UI.components.Form.Text onKeyDown={self.handleChangeStyles} name={key} title={HE.utils.camelCaseToDash(key)} value={self.getLab().link('style.' + key)}>
                         </HE.UI.components.Form.Text>
-                        <button onClick={self.removeAttribute.bind(self, key)}>X</button>
+                        <button className="button" onClick={self.removeAttribute.bind(self, key)}>X</button>
                         </div>)
                 } else {
                   return null;
@@ -634,9 +641,9 @@ HEUI.BoxList = React.createClass({
     var isCollapsed = (this.state.selectedBox == lab.getShortNS())?0:1
     return <HE.UI.components.Panel className="__Basic _pointer" data-collapsed={isCollapsed}>
             <div onClick={this.toggleBox.bind(this, lab)}>{lab.get('title')}</div>
-            <div>
-              <button onClick={this.editBox.bind(this, lab)}>Edit</button>
-              <button onClick={this.removeBox.bind(this, lab)}>Delete</button>
+            <div className="he-groupBtn">
+              <button className="button" onClick={this.editBox.bind(this, lab)}>Edit</button>
+              <button className="button" onClick={this.removeBox.bind(this, lab)}>Delete</button>
             </div>
           </HE.UI.components.Panel>
 
@@ -697,15 +704,17 @@ HEUI.BoxList = React.createClass({
             {boxesList}
             <div className="he-NewBoxForm">
               <div className="__Title" ref="newBoxActions">
-                <button onClick={this.newBox}>New Box</button>
+                <button className="button button-primary" onClick={this.newBox}>New Box</button>
               </div>
               <div className="he-hidden __Body" ref="newBoxForm">
                 <HE.UI.components.Form.Text name="title" title="Box Title" defaultValue="New Box" ref="newBoxTitle">
                 </HE.UI.components.Form.Text>
                 <HE.UI.components.Form.Select name="name" title="Box Name" data-options={this.getListOfBoxNames()} ref="newBoxName">
                 </HE.UI.components.Form.Select>
-                <button onClick={this.addBox}>Add</button>
-                <button onClick={this.cancelBox}>Cancel</button>
+                <div className="he-groupBtn">
+                  <button className="button" onClick={this.addBox}>Add</button>
+                  <button className="button" onClick={this.cancelBox}>Cancel</button>
+                </div>
               </div>              
             </div>
             </div>

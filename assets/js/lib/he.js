@@ -8,6 +8,7 @@ HE.init = function(){
 }
 
 HE.lab = require('./lab.js');
+var React = require('react');
 
 //////////////////////////////////// UI ////////////////////////////////////////
 HE.UI = {
@@ -486,6 +487,70 @@ HE.url = {
 }
 ////////////////////////////////// url ///////////////////////////////////////
 
+HE.form = {
+	textarea: {
+		autosize: function($scope){
+			function updateSize($textarea){
+	      if($textarea[0].clientHeight < $textarea[0].scrollHeight){
+	        $textarea.height($textarea[0].scrollHeight + 20)
+	      }
+			}
+	    jQuery($scope).find('textarea').each(function(){
+	    	var $this = jQuery(this)
+	    	updateSize($this)
+	    	//attach editor button if not exists
+	    	if(!$this.parent().find('.he-editor-btn').length){
+	    		var showBtn = jQuery('<button class="button he-editor-btn">Editor</button>')
+	    		showBtn.on('click', function(){
+			    	jQuery('textarea').removeClass('he-activeEditor')
+			    	$this.addClass('he-activeEditor');
+	    			HE.form.textarea.showEditor()
+	    		})
+		    	$this.before(showBtn)
+	    	}
+
+	    })	    
+	    .on('keypress', function(){
+	    	updateSize(jQuery(this))
+	    })
+		},
+		showEditor: function(){
+			var $editor = jQuery('#wp-heib-editor-wrap');
+			var $designer = jQuery('#he-design-holder');
+			var $textarea = jQuery('textarea.he-activeEditor')
+			$editor.toggle(400);
+			$designer.toggle();
+			//attach Done button
+    	if(!$editor.find('.he-hideEditor-btn').length){
+    		var hideBtn = jQuery('<button class="button button-primary he-hideEditor-btn">Done</button>')
+    		hideBtn.on('click', function(){
+    			 HE.form.textarea.hideEditor()
+    		})
+	    	$editor.append(hideBtn)
+    	}
+    	if($textarea.length){
+	    	//set content
+	    	tinyMCE.activeEditor.setContent($textarea.val());    		
+    	}
+    	$textarea.attr("disabled","disabled")
+			jQuery('.he-editor-btn').attr("disabled", "disabled")
+		},
+		hideEditor: function(){
+			var $editor = jQuery('#wp-heib-editor-wrap')
+			var $designer = jQuery('#he-design-holder')
+			var $textarea = jQuery('textarea.he-activeEditor')
+			$editor.toggle()
+			$designer.toggle(400)
+			if($textarea.length){
+				$textarea.val(tinyMCE.activeEditor.getContent())
+				// $textarea.trigger('change');
+				React.addons.TestUtils.Simulate.change($textarea[0])
+				$textarea.removeAttr("disabled")
+				jQuery('.he-editor-btn').removeAttr("disabled")
+			}
+		}
+	}
+}
 ////////////////////////////////// Cache ///////////////////////////////////////
 HE.cache = {
 	store: HE.lab.init({}),
@@ -530,6 +595,7 @@ HE.stack = {
 		this.stackName = stackName;
 		this.data = [];
 		this.pointer = -1;
+		this.savedPointer = null;
 		this.resetDataToCurrentPointer = function(){
 			if(this.data.length <= (this.pointer + 1)){
 
@@ -580,6 +646,13 @@ HE.stack = {
 			this.data = [];
 			this.pointer = -1;
 		}
+		this.savePointer = function(){
+			this.savedPointer = this.pointer;
+			return this;
+		}
+		this.canSave = function(){
+			return (this.savedPointer === null && this.pointer > 0 ) || (this.savedPointer !== null && this.savedPointer != this.pointer);
+		}
 		return this;
 	},
 	getInstance: function(stackName){
@@ -593,7 +666,7 @@ HE.stack = {
 HE.boxStack = {
 	pushState: function(){
 		HE.stack.getInstance('editingBoxDataStack').push(jQuery.extend(true, {}, HE.boxStack.currentState()));
-		// HE.hook.do_action('changedHEState__editedBox')
+		HE.hook.do_action('changedHEState__editedBox')
 	},
 	hasNextState: function(){
 		return HE.stack.getInstance('editingBoxDataStack').hasNext();
@@ -610,6 +683,12 @@ HE.boxStack = {
 	reset: function(){
 		return HE.stack.getInstance('editingBoxDataStack').reset();
 	},
+	saveState: function(){
+		return HE.stack.getInstance('editingBoxDataStack').savePointer();
+	},
+	isChanged: function(){
+		return HE.stack.getInstance('editingBoxDataStack').canSave();
+	},
 	currentState: function(){
 		var editingBox = HE.HEState.getState('editingBox', null);
 		var currentState;
@@ -622,7 +701,7 @@ HE.boxStack = {
 	getCurrentBoxLab: function(){
 		var editingBox = HE.HEState.getState('editingBox', null);
 		if(editingBox !== null){
-			return window.store.link('boxes.' + editingBox)
+			return window.HEStore.link('boxes.' + editingBox)
 		}
 		return null;
 	}

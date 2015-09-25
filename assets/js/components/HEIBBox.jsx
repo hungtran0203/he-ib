@@ -24,18 +24,18 @@ var HEIBBox = React.createClass({
 	mixins: [HE.UI.mixins.lab, HE.UI.mixins.common, HE.UI.mixins.responsive],
 	getInitialState: function() {
 		this.loadIBLab();
-		// this.store = window.store;
+		// this.store = window.HEStore;
   },
   loadIBLab: function(){
   	var self = this
 		// var storeDataStr = localStorage.getItem('heStore', null);
 		var storeDataStr = null;
-		window.store = HE.lab.init({boxes: []});
+		window.HEStore = HE.lab.init({boxes: []});
 		//get boxes data
 
 		HE.storage.get('boxes', null, function(res){
 			if(res && res.boxes){
-				window.store.quite().set('boxes', res.boxes);
+				window.HEStore.quite().set('boxes', res.boxes);
 				self.forceUpdate();
 			}
 		})
@@ -43,8 +43,8 @@ var HEIBBox = React.createClass({
 		window.HEState = HE.lab.init({});
 
 		//assign labs
-		this.store = window.store;
-		this.lab = window.store;
+		this.store = window.HEStore;
+		this.lab = window.HEStore;
 		this.HEState = window.HEState;
   },
   componentDidMount: function(){

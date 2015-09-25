@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: he-ib
-Plugin URI: http://halo.social/?return=true
+Plugin URI: http://halo.ib/?return=true
 Description: HaloEngine Informative Boxes plugin for WordPress
 Version: 1.0.0
 Author: HungTran
-Author URI: http://halo.social/wordpress-plugins/
+Author URI: http://halo.ib/wordpress-plugins/
 License: GPLv2 or later
 */
 
@@ -117,8 +117,8 @@ class HEIBApp {
 						'publish_pages',
 						$parent_slug,
 						$handle,
-						plugins_url( 'halosocial/app/views/default/assets/ico/favicon-16x16.png' ),
-						6 );
+						'',
+						null );
 		add_action( 'admin_print_styles-' . $page, 'HEIBApp::admin_enqueue_styles' );
 		add_action( 'admin_print_scripts-' . $page, 'HEIBApp::admin_enqueue_scripts' );
 	
@@ -147,7 +147,7 @@ class HEIBApp {
 		$settings = array( 'media_buttons' => false );
 		$editor_id = 'heib-editor';
 
-		// wp_editor( '', $editor_id, $settings );
+		wp_editor( '', $editor_id, $settings );
 	}
 
 	public static function ajaxProcess(){

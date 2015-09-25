@@ -109,27 +109,36 @@ var HEIBApp = React.createClass({
 			//on HEState change bindings
 			self.bindHEState('editingBox');
 			self.bindHEState('selectedBox');
-			self.bindHEState('editedBox');
+			self.bindHEState('editedBox', function(){
+				self.updateButtons();
+			});
 
 
 			return {'redraw': true};
 	  },
 	  componentDidMount: function(){
+	  	//move editor to the place holder place
+	  	jQuery('#wp-heib-editor-wrap').appendTo(jQuery('#he-editor-holder'))
+
 	  	if(this.getLab().get('boxes',[]).length){
 		  	HE.HEState.setState('selectedBox', 0)
 	  	}
+	  	this.updateButtons();
+	  },
+	  componentDidUpdate: function(){
+	  	this.updateButtons();
 	  },
 	  loadIBLab: function(){
 	  	var self = this
 			// var storeDataStr = localStorage.getItem('heStore', null);
 			var storeDataStr = null;
-			window.store = HE.lab.init({boxes: []});
+			window.HEStore = HE.lab.init({boxes: []});
 			//get boxes data
 
 			HE.storage.get('boxes', null, function(res){
 				if(res && res.boxes){
-					window.store.quite().set('boxes', res.boxes);
-					HE.HEState.setState('selectedBox', 0)					
+					window.HEStore.quite().set('boxes', res.boxes);
+					HE.HEState.setState('selectedBox', 0)
 				}
 			})
 
@@ -139,14 +148,36 @@ var HEIBApp = React.createClass({
 			window.HEState = HE.lab.init({});
 
 			//assign labs
-			this.store = window.store;
-			this.lab = window.store;
+			this.store = window.HEStore;
+			this.lab = window.HEStore;
 			this.HEState = window.HEState;
 			this.configBlocks = window.configBlocks;
 	  },
+	  updateButtons: function(){
+	  	if(this.refs['saveBtn']){
+				this.refs['saveBtn'].props['disabled'] = !HE.boxStack.isChanged();
+				this.refs['saveBtn'].forceUpdate();	  		
+	  	}
+	  	if(this.refs['undoBtn']){
+				this.refs['undoBtn'].props['disabled'] = !HE.boxStack.hasPrevState()
+				this.refs['undoBtn'].forceUpdate();	  		
+	  	}
+	  	if(this.refs['redoBtn']){
+				this.refs['redoBtn'].props['disabled'] = !HE.boxStack.hasNextState()
+				this.refs['redoBtn'].forceUpdate();	  		
+	  	}
+
+	  	if(this.refs['discardBtn']){
+				this.refs['discardBtn'].props['disabled'] = !HE.boxStack.hasPrevState()
+				this.refs['discardBtn'].forceUpdate();	  		
+	  	}
+
+	  },
 		handleSaveButtonClick: function(event){
 			HE.storage.set('boxes', this.lab.getVal(), null, function(res){})
-
+			HE.boxStack.saveState();
+			//update Button
+			this.updateButtons();
 		},
 		handleClearButtonClick: function(event){
 			var editingBox = HE.HEState.getState('editingBox', null);
@@ -161,13 +192,13 @@ var HEIBApp = React.createClass({
 		},
 		handleUndoButtonClick: function(event){
 			var undoState = jQuery.extend(true, {}, HE.boxStack.prevState());
-			HE.boxStack.getCurrentBoxLab().quite().setVal(undoState);
-			this.forceUpdate();
+			HE.boxStack.getCurrentBoxLab().setVal(undoState);
+			this.updateButtons();
 		},
 		handleRedoButtonClick: function(event){
 			var redoState = jQuery.extend(true, {}, HE.boxStack.nextState());
-			HE.boxStack.getCurrentBoxLab().quite().setVal(redoState);
-			this.forceUpdate();
+			HE.boxStack.getCurrentBoxLab().setVal(redoState);
+			this.updateButtons();
 		},
 		handleDoneButtonClick: function(event){
 			this.handleSaveButtonClick(event);
@@ -180,8 +211,8 @@ var HEIBApp = React.createClass({
 			do {
 				undoState = HE.boxStack.prevState();	
 			} while(HE.boxStack.hasPrevState())
-			HE.boxStack.getCurrentBoxLab().quite().setVal(undoState);
-			this.forceUpdate();			
+			HE.boxStack.getCurrentBoxLab().setVal(undoState);
+			this.updateButtons();
 		},
 		getEditingBox: function(){
 			return HE.HEState.getState('editingBox', null);
@@ -220,25 +251,41 @@ var HEIBApp = React.createClass({
 		},
 		getLeftColumn:function(){
     	if(this.getEditingBox() === null) {
-	    	return <HE.UI.components.Block.BoxList data-lab={this.store.link('boxes')} ref="config"></HE.UI.components.Block.BoxList>  
+	    	return <div>
+						    	<h3>Available Boxes</h3>
+						    	<HE.UI.components.Block.BoxList data-lab={this.store.link('boxes')} ref="config"></HE.UI.components.Block.BoxList>
+						    </div>
     	} else {
-    		return  <HE.UI.components.Block.ConfigList data-lab={this.getListConfigBlocks()} ref="config"></HE.UI.components.Block.ConfigList>
+    		return  <div>
+    							<h3>Available Blocks</h3>
+    							<HE.UI.components.Block.ConfigList data-lab={this.getListConfigBlocks()} ref="config"></HE.UI.components.Block.ConfigList>
+    						</div>
     	}
 		},
 		getMiddleColumn: function(){
     	if(this.getEditingBox() === null) {
     		var selectedBox = this.getSelectedBox();
-    		var boxView
+    		var boxView, boxTitle
     		if(selectedBox === null){
     			boxView = null;
     		} else {
 	    		var selectedBoxLab = this.getBoxLab(selectedBox);
     			boxView = <HE.UI.components.Block.Box.View data-lab={selectedBoxLab} ref="view"></HE.UI.components.Block.Box.View>
+    			boxTitle = selectedBoxLab.get('title')
     		}
     		return (
     			<div>
-		  			<div className="he-DesignToolBar">
-		  				<button onClick={this.handleSaveButtonClick}>Save</button>
+    				<h3>Box Preview {boxTitle? '[' + selectedBoxLab.get('title') + ']':''}</h3>
+    				<div className="mce-container">
+			  			<div className="he-DesignToolBar mce-toolbar">
+			  				<div className="mce-btn-group">
+				  				<div className="__item mce-btn">
+				  					<button onClick={this.handleSaveButtonClick} ref="saveBtn">
+				  						Save
+				  					</button>
+				  				</div>
+			  				</div>
+			  			</div>
 		  			</div>
     				<div className="he-DesignViewPort">
 		  				<div className="he-DesignCanvas">
@@ -250,23 +297,50 @@ var HEIBApp = React.createClass({
     	} else {
     		var editingBoxLab = this.getBoxLab(this.getEditingBox());
     		return (
-    			<div>
-		  			<div className="he-he-DesignToolBar">
-		  				<button onClick={this.handleSaveButtonClick}>Save</button>
-		  				<button onClick={this.handleClearButtonClick}>Clear</button>
-		  				<button onClick={this.handleDoneButtonClick}>Done</button>
-		  				<button disabled={!HE.boxStack.hasPrevState()} onClick={this.handleUndoButtonClick}>Undo</button>
-	  					<button disabled={!HE.boxStack.hasNextState()} onClick={this.handleRedoButtonClick}>Redo</button>
-		  				<button disabled={!HE.boxStack.hasPrevState()} onClick={this.handleDiscardButtonClick}>Discard</button>
-		  			</div>
-      			<div>Box: {editingBoxLab.get('title')}</div>
+    			<div className="">
+    				<h3>Box Design [{editingBoxLab.get('title')}]</h3>
+    				<div className="mce-container">
+			  			<div className="he-DesignToolBar mce-toolbar">
+			  				<div className="mce-btn-group">
+				  				<div className="__item mce-btn">
+				  					<button onClick={this.handleSaveButtonClick} ref="saveBtn">
+				  						Save
+				  					</button>
+				  				</div>
+				  				<div className="__item mce-btn">
+					  				<button onClick={this.handleClearButtonClick} ref="clearBtn">
+				  						Clear
+				  					</button>
+				  				</div>
+				  				<div className="__item mce-btn">
+					  				<button onClick={this.handleDoneButtonClick} ref="doneBtn">
+				  						Done
+				  					</button>
+				  				</div>
+				  				<div className="__item mce-btn">
+					  				<button onClick={this.handleUndoButtonClick} ref="undoBtn">
+				  						Undo
+				  					</button>
+				  				</div>
+				  				<div className="__item mce-btn">
+				  					<button onClick={this.handleRedoButtonClick} ref="redoBtn">
+				  						Redo
+				  					</button>
+				  				</div>
+				  				<div className="__item mce-btn">
+					  				<button onClick={this.handleDiscardButtonClick} ref="discardBtn">
+				  						Discard
+				  					</button>
+				  				</div>
+			  				</div>
+			  			</div>
+			  		</div>
 		  			<div className="he-DesignViewPort">
 		  				<div className="he-DesignCanvas">
 		  					<HE.UI.components.Block.Box.Edit data-lab={editingBoxLab} ref="edit">
 		  					</HE.UI.components.Block.Box.Edit>
 		  				</div>
 		  			</div>
-		  			<div>Footer</div>
 		  		</div>
 		  		);
     	}
@@ -279,26 +353,25 @@ var HEIBApp = React.createClass({
 				attrLab = this.HEState.link('activeBlock');
 			}
 			return (<div>
-		       			<div>Toolbar</div>
 	      					<HE.UI.components.Block.Attributes style={{padding:'5px 5px'}} data-lab={attrLab} ref="attributes">
 	      					</HE.UI.components.Block.Attributes>
 	     				</div>);
 		},
     render: function () {
         return (
-        	<div className="">
+        	<div className="wp-core-ui">
         		<HE.UI.components.Grid.Rows>
 	        		<div data-width="20" className="he-Column">
-	        			<div>Left</div>
-	        			<div>Toolbar</div>
 	        			{this.getLeftColumn()}
 	        		</div>
 	        		<div data-width="50" className="he-Column">
-	        			<div>Middle</div>
+	        			<div id="he-design-holder">
 	        			{this.getMiddleColumn()}
+	        			</div>
+	        			<div id="he-editor-holder"></div>
 	        		</div>
 	        		<div data-width="30" className="he-Column">
-	        			<div>Right</div>
+	        			<h3>Properties</h3>
 	        			{this.getRightColumn()}
 	        		</div>        			
         		</HE.UI.components.Grid.Rows>

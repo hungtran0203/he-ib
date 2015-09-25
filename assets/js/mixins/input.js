@@ -1,10 +1,10 @@
 var inputMixins = {
   componentDidMount: function () {
-  	if(this.refs.iput){
-	    var thisInput = React.findDOMNode(this.refs.iput);
+  	if(this.refs.input){
 	    var self = this;
 	    //bind filterChange if set
 	    if(this.props.filterChange){
+		    var thisInput = React.findDOMNode(this.refs.input);
 	    	jQuery(thisInput).on('change', function(){
 	    		HE.hook.apply_filter('change_input_' + this.props.filterChange, self)
 	    	})
