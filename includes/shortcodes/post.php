@@ -5,6 +5,7 @@ function heib_get_post(){
 	if(!is_null($heib__Response) && is_a($heib__Response, 'HEIBResponse') ){
 		$query = $heib__Response->query();
 		$contextUrl = isset($query['contextUrl'])?$query['contextUrl']:'';
+		$contextUrl = stripslashes($contextUrl);
 		if($contextUrl !== ''){
 			if($postId = url_to_postid($contextUrl)){
 				$post = get_post($postId);

@@ -141,7 +141,7 @@ add_filter('heib_process_endpoint__shortcode.get', function($res){
 	} else {
 		$shortcode = $query['shortcode'];
 
-		$content = do_shortcode(stripslashes(stripslashes($shortcode)));
+		$content = do_shortcode(stripslashes($shortcode));
 
 		$res->data = $content;
 	}
