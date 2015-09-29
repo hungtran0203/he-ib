@@ -18,8 +18,20 @@ function heib_get_post(){
 	}
 	//no post found
 	return null;
-
 }
+
+function heib_verifyPostLink($res){
+	$query = $res->query();
+	if(isset($query['type']) && $query['type'] === 'post'){
+		$post = heib_get_post();
+		if($post)	{
+			$res->data = 1;
+		}
+	}
+}
+
+add_action('heib_verifyLink', 'heib_verifyPostLink');
+
 //////////////////// post_title ///////////////////////////
 /* 
 	return post's title

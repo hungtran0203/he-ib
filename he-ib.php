@@ -109,7 +109,7 @@ class HEIBApp {
 	/****************************************** Define hook call back function ***************************************/
 	public static function admin_menu(){
 		$parent_slug = 'heib_dashboard';
-		$handle = 'HEIBApp::admin_content';
+		$handle = 'HEIBApp::getDashboardContent';
 		//menu page
 		$page = add_menu_page( 	'Informative Boxes',
 						'Informative Boxes',
@@ -119,9 +119,18 @@ class HEIBApp {
 						$handle,
 						'',
 						null );
-		add_action( 'admin_print_styles-' . $page, 'HEIBApp::admin_enqueue_styles' );
-		add_action( 'admin_print_scripts-' . $page, 'HEIBApp::admin_enqueue_scripts' );
+
+		$designPage = add_submenu_page( $parent_slug, 
+											'Box Design', 
+											'Box Design', 
+											'publish_pages',
+											'heib_design', 
+											'HEIBApp::getDesignContent' );
+		add_action( 'admin_print_styles-' . $designPage, 'HEIBApp::admin_enqueue_styles' );
+		add_action( 'admin_print_scripts-' . $designPage, 'HEIBApp::admin_enqueue_scripts' );
 	
+		//call register settings function
+		add_action( 'admin_init', 'HEIBAPP::register_plugin_settings' );	
 	}
 
 	public static function admin_enqueue_styles(){
@@ -142,12 +151,49 @@ class HEIBApp {
 	}
 
 	public static function admin_content(){
+		if(isset($_REQUEST['view']) && $_REQUEST['view'] == 'design'){
+			HEIBApp::getDesignContent();	
+		} else {
+			HEIBApp::getDashboardContent();
+		}
+		
+	}
+
+	public static function register_plugin_settings(){
+		//register our settings
+		register_setting( 'heib-settings-group', 'heib_blacklist_urls' );
+	}
+	public static function getDashboardContent(){
+		?>
+		<div class="wrap">
+		<h2>Informative Boxes Settings</h2>
+
+		<form method="post" action="options.php">
+		    <?php settings_fields( 'heib-settings-group' ); ?>
+		    <?php do_settings_sections( 'heib-settings-group' ); ?>
+		    <table class="form-table">
+		        <tr valign="top">
+			        <th scope="row">Do not show Informative Boxes for urls</th>
+			        <td>
+			        	<textarea rows="5" cols="40" name="heib_blacklist_urls"><?php echo esc_attr( get_option('heib_blacklist_urls') ); ?></textarea>
+			        </td>
+		        </tr>		         
+		    </table>
+		    
+		    <?php submit_button(); ?>
+
+		</form>
+		</div>
+		<?php 
+	}
+
+	public static function getDesignContent(){
 		echo '<div id="heib_wrapper"></div>';
 		
 		$settings = array( 'media_buttons' => false );
 		$editor_id = 'heib-editor';
 
-		wp_editor( '', $editor_id, $settings );
+		wp_editor( '', $editor_id, $settings );		
 	}
 
 	public static function ajaxProcess(){

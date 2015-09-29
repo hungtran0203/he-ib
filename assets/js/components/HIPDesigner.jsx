@@ -380,4 +380,6 @@ var HEIBApp = React.createClass({
     }
 });
 
-React.render(<HEIBApp/>, document.getElementById('heib_wrapper'));
+if(document.getElementById('heib_wrapper')){
+	React.render(<HEIBApp/>, document.getElementById('heib_wrapper'));	
+}

@@ -157,7 +157,8 @@ HE.utils = {
 										})
 	},
 	staticBatchKeys: {},
-	getBatch: function(key, fun, delay){
+	staticBatchCounters: {},
+	getBatch: function(key, fun, delay, maxItemPerBatch){
 		delay = delay || 30;
 		if(!HE.utils.staticBatchKeys[key]){
 			var args = [];
@@ -165,7 +166,19 @@ HE.utils = {
 			HE.utils.staticBatchKeys[key] = function(){
 				var context = this;
 				args.push(Array.prototype.slice.call(arguments, 0));
-				if(timer === null){
+
+				HE.utils.staticBatchCounters[key] = HE.utils.staticBatchCounters[key]?HE.utils.staticBatchCounters[key] + 1: 1;
+				if(maxItemPerBatch && HE.utils.staticBatchCounters[key] >= maxItemPerBatch){
+						//max item per batch reached, execute without waiting
+						fun.apply(context, [args]);
+						delete HE.utils.staticBatchKeys[key];
+						if(timer === null){
+							clearTimeout(timer);
+						}
+						//reset enviroment
+						timer = null;	//reset timer	
+						HE.utils.staticBatchCounters[key] = 0;				
+				} else if (timer === null){
 					timer = setTimeout(function () {
 						fun.apply(context, [args]);
 						delete HE.utils.staticBatchKeys[key];
@@ -427,13 +440,29 @@ HE.url = {
 	},
 	bindUrl: function(){
 		HE.url.getBoxPermalinks(function(permalinks){
+			//prepare blacklist
+			var blacklist = [];
+			if(permalinks.blacklist){
+				var blacklistStr = permalinks.blacklist.replace(/\n/g, ';')
+				var blacklist = blacklistStr.split(';').map(function(val){
+					return val.trim();
+				}).filter(function(val){
+					return val.length > 0;
+				})
+			}
 			if(jQuery(this).data('heibType') === undefined){
 				jQuery('a').each(function(){
 					var href = this.href;
-					if(href.indexOf(permalinks.home) === 0){
+					var $this = jQuery(this);
+					if(href.indexOf(permalinks.home) === 0  && (blacklist.length === 0 || !HE.url.matchUrl(href, blacklist))) {
 						for(var type in permalinks){
+							//check for blacklist
 							if(type !== 'home' && HE.url.matchUrl(href, permalinks[type])){
-								jQuery(this).data('heibType', type);
+								HE.storage.get('verifyLink', {contextUrl: href, type: type}, function(res){
+									if(res){
+										$this.data('heibType', type);
+									}
+								});
 								return;
 							}
 						}
@@ -460,6 +489,16 @@ HE.url = {
 		});
 	},
 	matchUrl: function(url, pattern){
+		//pattern as array
+		if(Array.isArray(pattern)){
+			for(var i = 0; i < pattern.length; i++){
+				if(HE.url.matchUrl(url, pattern[i])){
+					return true;
+				}
+			}
+			return false;
+		}
+
 		var tagRegs = {
 			'%year%': 				'[0-2][0-9]{3}',
 			'%monthnum%': 		'[0-1][0-9]',
@@ -491,13 +530,16 @@ HE.form = {
 	textarea: {
 		autosize: function($scope){
 			function updateSize($textarea){
+				console.log($textarea[0].clientHeight, $textarea[0].scrollHeight);
 	      if($textarea[0].clientHeight < $textarea[0].scrollHeight){
 	        $textarea.height($textarea[0].scrollHeight + 20)
 	      }
 			}
+		
 	    jQuery($scope).find('textarea').each(function(){
 	    	var $this = jQuery(this)
 	    	updateSize($this)
+	    	
 	    	//attach editor button if not exists
 	    	if(!$this.parent().find('.he-editor-btn').length){
 	    		var showBtn = jQuery('<button class="button he-editor-btn">Editor</button>')
@@ -508,11 +550,11 @@ HE.form = {
 	    		})
 		    	$this.before(showBtn)
 	    	}
-
 	    })	    
 	    .on('keypress', function(){
 	    	updateSize(jQuery(this))
 	    })
+
 		},
 		showEditor: function(){
 			var $editor = jQuery('#wp-heib-editor-wrap');
@@ -908,7 +950,7 @@ var ajaxStorageHandler = function(){
 	this.getData = function(endpoint, params, passCb, failCb){
 		params = jQuery.extend(true, {}, params, {endpoint:endpoint + '.get'});
 		//apply batch
-		HE.utils.getBatch('heibAjaxStorage', HE.utils.ajaxBatchHandler)(params, function(res){
+		HE.utils.getBatch('heibAjaxStorage', HE.utils.ajaxBatchHandler, 100, 20)(params, function(res){
 			if(typeof passCb === 'function') {
 				passCb(res.data);
 			}			

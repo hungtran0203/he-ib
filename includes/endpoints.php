@@ -44,8 +44,9 @@ add_filter('heib_process_endpoint__batch', function($res){
 			$res->error = 2;
 			$res->errMsg = 'Invalid batch query';
 		} else {
-			$data = array_map(function($batch){
-				$res = new HEIBResponse($batch);
+			$data = array_map(function($batch) use($query){
+				$batchQuery = array_merge($query, $batch);
+				$res = new HEIBResponse($batchQuery);
 				$res = HEIBApp::processEndpoint($res);
 				return $res->toObject();
 			}, $batchData);
@@ -82,6 +83,13 @@ add_filter('heib_process_endpoint__box.permalinks.get', function($res){
 	//home permalink
 	$permalinks->home = home_url('');
 
+	//black list
+	$blacklist = get_option('heib_blacklist_urls');
+	if($blacklist) {
+		$permalinks->blacklist = $blacklist;
+	}
+	
+
 	$res->data = $permalinks;
 	return $res;
 });
@@ -103,6 +111,14 @@ add_filter('heib_process_endpoint__boxes.set', function($res){
 */
 add_filter('heib_process_endpoint__boxes.get', function($res){
 	$res->data = get_option('heib_boxes_data');
+	return $res;
+});
+
+/* 
+	verify a link
+*/
+add_filter('heib_process_endpoint__verifyLink.get', function($res){
+	do_action('heib_verifyLink', $res);
 	return $res;
 });
 //////////////////// End Boxes Endpoints ///////////////////////////
