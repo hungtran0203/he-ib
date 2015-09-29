@@ -98,10 +98,14 @@ add_filter('heib_process_endpoint__box.permalinks.get', function($res){
 	set boxes endpoint
 */
 add_filter('heib_process_endpoint__boxes.set', function($res){
+	//check for permission
+	if(current_user_can('publish_pages')){
 		//sanity box data
-	$query = $res->query();
-	$boxes = isset($query['value'])?$query['value']:array();
-	update_option('heib_boxes_data', $boxes);
+		$query = $res->query();
+		$boxes = isset($query['value'])?$query['value']:array();
+		$boxes = heib_sanitize_lab($boxes);
+		update_option('heib_boxes_data', $boxes);		
+	}
 	return $res;
 
 });
@@ -136,7 +140,9 @@ add_filter('heib_process_endpoint__shortcode.get', function($res){
 		$res->errMsg = 'No shortcode provided';
 	} else {
 		$shortcode = $query['shortcode'];
-		$content = do_shortcode($shortcode);
+
+		$content = do_shortcode(stripslashes(stripslashes($shortcode)));
+
 		$res->data = $content;
 	}
 	return $res;	

@@ -530,7 +530,6 @@ HE.form = {
 	textarea: {
 		autosize: function($scope){
 			function updateSize($textarea){
-				console.log($textarea[0].clientHeight, $textarea[0].scrollHeight);
 	      if($textarea[0].clientHeight < $textarea[0].scrollHeight){
 	        $textarea.height($textarea[0].scrollHeight + 20)
 	      }

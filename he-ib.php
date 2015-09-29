@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 defined( 'ABSPATH' ) || exit;
 
+require_once(dirname(__FILE__) . '/includes/lib.php');
 /** If you hardcode a WP.com API key here, all key config screens will be hidden */
 class HEIBApp {
 	private function __construct() { /* Do nothing here */ }
