@@ -73,7 +73,7 @@ var HEIBBox = React.createClass({
 		var boxes = this.store.get('boxes');
 		var index
 		for(var key = 0; key < boxes.length; key ++){
-			if(boxes[key].name == boxType && (boxes[key].published === undefined || boxes[key].published === 1)){
+			if(boxes[key].name == boxType && (boxes[key].published === undefined || parseInt(boxes[key].published) === 1)){
 				index = key;
 			}			
 		}

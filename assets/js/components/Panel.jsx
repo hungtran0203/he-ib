@@ -4,13 +4,6 @@ var React = require('react');
 HEUI = React.createClass({
 	mixins: [HE.UI.mixins.common],
 	componentDidMount: function(){
-		var $this = jQuery(React.findDOMNode(this))
-		//binding
-		if($this.hasClass('_pointer')){
-			$this.find('.__Head').on('click', function(e){
-				$this.find('.__Body').toggleClass('he-hidden')
-			});
-		}
 	},
 	getBodyClass: function(){
 		var bodyClass = "__Body";
@@ -18,6 +11,13 @@ HEUI = React.createClass({
 			bodyClass += ' he-hidden';
 		}
 		return bodyClass;
+	},
+	handleHeadClick: function(event){
+		var $this = jQuery(React.findDOMNode(this))
+		//binding
+		if($this.hasClass('_pointer')){
+			$this.find('.__Body').toggleClass('he-hidden')
+		}
 	},
   render: function(){
   	var headNode, bodyNode;
@@ -30,7 +30,7 @@ HEUI = React.createClass({
     return  <div className={this.getClass('he-Panel')}>
     					{
     						headNode?
-	              <div className="__Head" ref="head">
+	              <div className="__Head" ref="head" onClick={this.handleHeadClick}>
 	                {headNode}
 	              </div>
 	              :null

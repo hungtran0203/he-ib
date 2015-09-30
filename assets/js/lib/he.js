@@ -390,7 +390,6 @@ HE.box = {
 	showBox: function($ele, type){
 		var offset = $ele.offset();
 		var $box = HE.box.findOrNewBox();
-
 		//reset min-width, min-height in case auto size set it
 		$box.find('.he-Box.__View').css('min-height', '').css('min-width', '')
 

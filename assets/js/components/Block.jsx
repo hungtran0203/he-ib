@@ -638,9 +638,22 @@ HEUI.BoxList = React.createClass({
   getStyle: function(){
   },
   getBox: function(lab){
-    var isCollapsed = (this.state.selectedBox == lab.getShortNS())?0:1
+    var isCollapsed = (this.state.selectedBox == lab.getShortNS())?0:1;
+    var isPublished = parseInt(lab.get('published', 1));
+    
+    if(isPublished){
+      var publishBtn = <button className="he-button button button-primary" onClick={this.togglePublish.bind(this, lab)}>Enabled</button>
+    } else {
+      var publishBtn = <button className="he-button button button-info" onClick={this.togglePublish.bind(this, lab)}>Disabled</button>
+    }
+
     return <HE.UI.components.Panel className="__Basic _pointer" data-collapsed={isCollapsed}>
-            <div onClick={this.toggleBox.bind(this, lab)}>{lab.get('title')}</div>
+            <div onClick={this.toggleBox.bind(this, lab)}>
+              {lab.get('title')}
+              <span>
+                {publishBtn}
+              </span>
+            </div>
             <div className="he-groupBtn">
               <button className="button" onClick={this.editBox.bind(this, lab)}>Edit</button>
               <button className="button" onClick={this.removeBox.bind(this, lab)}>Delete</button>
@@ -660,6 +673,11 @@ HEUI.BoxList = React.createClass({
   },
   removeBox: function(lab){
     lab.clear('');
+  },
+  togglePublish: function(lab, event){
+    var newState = (parseInt(lab.get('published', 1)) + 1) % 2;
+    lab.set('published', newState)
+    event.stopPropagation();
   },
   newBox: function(event){
     jQuery(React.findDOMNode(this.refs.newBoxForm)).removeClass('he-hidden');

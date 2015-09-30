@@ -27,6 +27,12 @@ $he-panel-bg: #FFFFFF;
     border-width: $panel-border-size;
     border-color: $panel-border-color;
     background: $panel-bg;
+    position: relative;
+    .he-button {
+			top: 0px;
+			position: absolute;
+			right: 0px;
+    }
 	}
 	/* cursor modifier */
 	&._pointer {

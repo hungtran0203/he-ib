@@ -152,10 +152,16 @@ var HEIBApp = React.createClass({
 			this.lab = window.HEStore;
 			this.HEState = window.HEState;
 			this.configBlocks = window.configBlocks;
+
+			this.store.bind('*', 'set', function(){
+				HE.cache.set('boxesDidChange', 1)
+				self.updateButtons();
+			})
 	  },
 	  updateButtons: function(){
 	  	if(this.refs['saveBtn']){
-				this.refs['saveBtn'].props['disabled'] = !HE.boxStack.isChanged();
+	  		var isChanged = HE.cache.get('boxesDidChange', 0);
+				this.refs['saveBtn'].props['disabled'] = !isChanged;
 				this.refs['saveBtn'].forceUpdate();	  		
 	  	}
 	  	if(this.refs['undoBtn']){
@@ -176,6 +182,7 @@ var HEIBApp = React.createClass({
 		handleSaveButtonClick: function(event){
 			HE.storage.set('boxes', this.lab.getVal(), null, function(res){})
 			HE.boxStack.saveState();
+			HE.cache.set('boxesDidChange', 0);
 			//update Button
 			this.updateButtons();
 		},
