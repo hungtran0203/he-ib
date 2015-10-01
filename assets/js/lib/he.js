@@ -441,22 +441,27 @@ HE.url = {
 		HE.url.getBoxPermalinks(function(permalinks){
 			//prepare blacklist
 			var blacklist = [];
-			if(permalinks.blacklist){
-				var blacklistStr = permalinks.blacklist.replace(/\n/g, ';')
+			if(permalinks.config && permalinks.config.blacklist){
+				var blacklistStr = permalinks.config.blacklist.replace(/\n/g, ';')
 				var blacklist = blacklistStr.split(';').map(function(val){
 					return val.trim();
 				}).filter(function(val){
 					return val.length > 0;
 				})
 			}
+			if(Object.keys(permalinks).length <= 1) {
+				//no box permalinks found, just skip it
+				return;
+			}
+
 			if(jQuery(this).data('heibType') === undefined){
 				jQuery('a').each(function(){
 					var href = this.href;
 					var $this = jQuery(this);
-					if(href.indexOf(permalinks.home) === 0  && (blacklist.length === 0 || !HE.url.matchUrl(href, blacklist))) {
+					if(href.indexOf(permalinks.config.home) === 0  && (blacklist.length === 0 || !HE.url.matchUrl(href, blacklist))) {
 						for(var type in permalinks){
 							//check for blacklist
-							if(type !== 'home' && HE.url.matchUrl(href, permalinks[type])){
+							if(type !== 'config' && HE.url.matchUrl(href, permalinks[type])){
 								HE.storage.get('verifyLink', {contextUrl: href, type: type}, function(res){
 									if(res){
 										$this.data('heibType', type);

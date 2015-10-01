@@ -13,7 +13,7 @@ function heib_get_user(){
 /* 
 	return username
 */
-HEIBShortcode::add_shortcode('username', function(){
+HEIBShortcode::add_shortcode('username', function($attr){
 	$user = heib_get_user();
 	return $user->display_name;	
 }, 'user');
@@ -23,9 +23,13 @@ HEIBShortcode::add_shortcode('username', function(){
 /* 
 	return user's avatar
 */
-HEIBShortcode::add_shortcode('user_avatar', function(){
+HEIBShortcode::add_shortcode('user_avatar', function($attr){
+	//setup default atts
+	$atts = shortcode_atts(
+					array('size' => 80)
+					, $attr);
 	$user = heib_get_user();
-	return get_avatar($user->ID, 80);
+	return get_avatar($user->ID, $atts['size']);
 }, 'user');
 //////////////////// user_avatar ///////////////////////////
 
@@ -33,9 +37,19 @@ HEIBShortcode::add_shortcode('user_avatar', function(){
 /* 
 	return user display link
 */
-HEIBShortcode::add_shortcode('user_link', function(){
+HEIBShortcode::add_shortcode('user_link', function($attr){
 	$user = heib_get_user();
-	return '<a href="' . get_author_posts_url($user->ID) . '">' . $user->display_name . '</a>';
+
+	$atts = shortcode_atts(
+					array('length' => null, 'ending' => ' ...')
+					, $attr);
+	$displayName = $user->display_name;
+
+	if(!is_null($atts['length'])){
+		$displayName = heib_truncate($displayName, $atts['length'], array('ending'=>$atts['ending']));
+	}
+	
+	return '<a href="' . get_author_posts_url($user->ID) . '">' . $displayName . '</a>';
 }, 'user');
 //////////////////// user_link ///////////////////////////
 
@@ -43,7 +57,7 @@ HEIBShortcode::add_shortcode('user_link', function(){
 /* 
 	return user display link
 */
-HEIBShortcode::add_shortcode('user_url', function(){
+HEIBShortcode::add_shortcode('user_url', function($attr){
 	$user = heib_get_user();
 	return get_author_posts_url($user->ID);
 }, 'user');
@@ -53,9 +67,14 @@ HEIBShortcode::add_shortcode('user_url', function(){
 /* 
 	return user recent posts
 */
-HEIBShortcode::add_shortcode('user_recent_posts', function(){
+HEIBShortcode::add_shortcode('user_recent_posts', function($attr){
+	//setup default atts
+	$atts = shortcode_atts(
+					array('count' => 3)
+					, $attr);
+
 	$user = heib_get_user();
-	$authors_posts = get_posts( array( 'author' => $user->ID, 'posts_per_page' => 3 ) );
+	$authors_posts = get_posts( array( 'author' => $user->ID, 'posts_per_page' => $atts['count'] ) );
 	$output = '<ul>';
   foreach ( $authors_posts as $authors_post ) {
     $output .= '<li><a href="' . get_permalink( $authors_post->ID ) . '">' 

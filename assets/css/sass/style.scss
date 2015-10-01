@@ -21,6 +21,7 @@ $opposite-direction: 'right';
     /* Panels */
 $he-panel-bg: #FFFFFF;
 .he-Panel {
+	margin-bottom: 4px;
 	.__Head {
 		padding: $panel-padding/4 $panel-padding;
     border-style: $panel-border-style;
@@ -32,6 +33,7 @@ $he-panel-bg: #FFFFFF;
 			top: 0px;
 			position: absolute;
 			right: 0px;
+			border-radius: 0px;
     }
 	}
 	/* cursor modifier */
@@ -61,7 +63,7 @@ $he-panel-bg: #FFFFFF;
 	  &.radius {
 	    @include radius;
 	  }
-
+	  border-top: none;
 	}
 }
 
@@ -464,6 +466,12 @@ $he-panel-bg: #FFFFFF;
 	margin-bottom: 8px;
 	&:last-child {
 		margin-bottom: 0px;
+	}
+	.button {
+		margin-left: -1px;
+    border-radius: 0px;
+    height: 27px;
+    margin-top: 1px;
 	}	
 }
 

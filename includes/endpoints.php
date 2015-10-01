@@ -62,33 +62,29 @@ add_filter('heib_process_endpoint__batch', function($res){
 */
 add_filter('heib_process_endpoint__box.permalinks.get', function($res){
 	$permalinks = new stdClass();
-	//post permalink
-	$permalink = apply_filters('heib__get_permalink.post', '');
-	if($permalink != ''){
-		$permalinks->post = $permalink;
+	$boxLab = get_option('heib_boxes_data');
+	if(isset($boxLab['boxes']) && is_array($boxLab['boxes'])){
+		foreach($boxLab['boxes'] as $box){
+			if(!isset($box['published']) || $box['published']){
+				if(isset($box['name'])){
+					$permalink = apply_filters('heib__get_permalink.' . $box['name'], '');
+					$permalinks->$box['name'] = $permalink;	
+				}
+			}
+		}
 	}
 
-	//user permalink
-	$permalink = apply_filters('heib__get_permalink.user', '');
-	if($permalink != ''){
-		$permalinks->user = $permalink;
-	}
-
-	//category permalink
-	$permalink = apply_filters('heib__get_permalink.category', '');
-	if($permalink != ''){
-		$permalinks->category = $permalink;
-	}
-
-	//home permalink
-	$permalinks->home = home_url('');
+	//config for permalink
+	//home link
+	$config = array();
+	$config['home'] = home_url('');
 
 	//black list
 	$blacklist = get_option('heib_blacklist_urls');
-	if($blacklist) {
-		$permalinks->blacklist = $blacklist;
-	}
-	
+	$blacklist = $blacklist?$blacklist:'';
+	$config['blacklist'] = $blacklist;
+
+	$permalinks->config = $config;
 
 	$res->data = $permalinks;
 	return $res;

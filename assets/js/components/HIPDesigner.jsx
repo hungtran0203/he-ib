@@ -282,7 +282,12 @@ var HEIBApp = React.createClass({
     		}
     		return (
     			<div>
-    				<h3>Box Preview {boxTitle? '[' + selectedBoxLab.get('title') + ']':''}</h3>
+    				<h3>Box Preview {boxTitle? 
+    					<span>
+    						[<HE.UI.components.Form.Span data-lab={selectedBoxLab.link('title')}></HE.UI.components.Form.Span>]
+    					</span>
+    					:''}
+    				</h3>
     				<div className="mce-container">
 			  			<div className="he-DesignToolBar mce-toolbar">
 			  				<div className="mce-btn-group">
@@ -305,7 +310,7 @@ var HEIBApp = React.createClass({
     		var editingBoxLab = this.getBoxLab(this.getEditingBox());
     		return (
     			<div className="">
-    				<h3>Box Design [{editingBoxLab.get('title')}]</h3>
+    				<h3>Box Design [{<HE.UI.components.Form.Span data-lab={editingBoxLab.link('title')}></HE.UI.components.Form.Span>}]</h3>
     				<div className="mce-container">
 			  			<div className="he-DesignToolBar mce-toolbar">
 			  				<div className="mce-btn-group">

@@ -534,11 +534,11 @@ HEUI.Attributes = React.createClass({
             <HE.UI.components.Panel className="__Basic _pointer">
               <div>Basic Settings</div>
               <div>
-                <HE.UI.components.Form.Text key="type" name="type" title="type" disabled={true} value={self.getLab().get('type')}>
+                <HE.UI.components.Form.Text key="type" name="type" title="Type" disabled={true} value={self.getLab().get('type')}>
                 </HE.UI.components.Form.Text>
-                <HE.UI.components.Form.Text key="name" name="name" title="name" disabled={true} value={self.getLab().get('name')}>
+                <HE.UI.components.Form.Text key="name" name="name" title="Name" disabled={true} value={self.getLab().get('name')}>
                 </HE.UI.components.Form.Text>
-                <HE.UI.components.Form.Text key="title" name="title" title="title" value={self.getLab().link('title')}>
+                <HE.UI.components.Form.Text key="title" name="title" title="Title" value={self.getLab().link('title')}>
                 </HE.UI.components.Form.Text>
               </div>
             </HE.UI.components.Panel>
