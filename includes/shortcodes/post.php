@@ -45,19 +45,20 @@ add_action('heib_verifyLink', 'heib_verifyPostLink');
 	return post's title
 */
 HEIBShortcode::add_shortcode('post_title', function($attr){
-	$atts = shortcode_atts(
-					array('length' => null, 'ending' => ' ...')
-					, $attr);
+	$atts = HEIBShortcode::get_atts($attr);
 	$post = heib_get_post();
 	
-	if($post && !is_null($atts['length']) && $atts['length'] > 0 ){
+	if($post){
 		$title = get_the_title();
-		$title = heib_truncate($title, $atts['length'], array('ending'=>$atts['ending'], 'exact'=>false, 'html'=>true));
+		//truncate content
+		if(!is_null($atts['length']) && $atts['length'] > 0 ){
+			$title = heib_truncate($title, $atts['length'], array('ending'=>$atts['ending'], 'exact'=>false, 'html'=>true));
+		}
 	} else {
 		$title = '';
 	}
 	return $title;
-}, 'post');
+}, 'post', array('length' => null, 'ending' => ' ...'));
 //////////////////// post_title ///////////////////////////
 
 //////////////////// post_content ///////////////////////////
@@ -65,21 +66,21 @@ HEIBShortcode::add_shortcode('post_title', function($attr){
 	return post's description
 */
 HEIBShortcode::add_shortcode('post_content', function($attr){
-	$atts = shortcode_atts(
-					array('length' => 60, 'ending' => ' ...')
-					, $attr);
+	$atts = HEIBShortcode::get_atts($attr);
 	$post = heib_get_post();
 
 	if($post){
 		$content = apply_filters( 'the_content', get_the_content() );
 		$content = str_replace( ']]>', ']]&gt;', $content );
 		//truncate content
-		$content = heib_truncate($content, $atts['length'], array('ending'=>$atts['ending'], 'exact'=>false, 'html'=>true));
+		if(!is_null($atts['length']) && $atts['length'] > 0 ){
+			$content = heib_truncate($content, $atts['length'], array('ending'=>$atts['ending'], 'exact'=>false, 'html'=>true));
+		}
 		return $content;
 	} else {
 		return '';
 	}
-}, 'post');
+}, 'post', array('length' => 60, 'ending' => ' ...'));
 //////////////////// post_content ///////////////////////////
 
 //////////////////// post_comment_count ///////////////////////////
@@ -87,12 +88,11 @@ HEIBShortcode::add_shortcode('post_content', function($attr){
 	return post comment count
 */
 HEIBShortcode::add_shortcode('post_comment_count', function($attr){
-	$atts = shortcode_atts(
-					array('empty' => __('N/A'))
-					, $attr);
+	$atts = HEIBShortcode::get_atts($attr);
+
 	$post = heib_get_post();
 	return $post?$post->comment_count:$atts['empty'];
-}, 'post');
+}, 'post', array('empty' => __('N/A')));
 //////////////////// post_comment_count ///////////////////////////
 
 //////////////////// post_link ///////////////////////////
@@ -110,9 +110,7 @@ HEIBShortcode::add_shortcode('post_link', function($attr){
 	return post category list 
 */
 HEIBShortcode::add_shortcode('post_category_list', function($attr){
-	$atts = shortcode_atts(
-					array('separator' => null, 'parents' => '', 'empty' => __('N/A'))
-					, $attr);
+	$atts = HEIBShortcode::get_atts($attr);
 	$post = heib_get_post();
 
 	$content = '';
@@ -120,7 +118,7 @@ HEIBShortcode::add_shortcode('post_category_list', function($attr){
 		$content = __(get_the_category_list($atts['separator'], $atts['parents']));
 	}
 	return $content?$content:$atts['empty'];
-}, 'post');
+}, 'post', array('separator' => null, 'parents' => '', 'empty' => __('N/A')));
 //////////////////// post_category_list ///////////////////////////
 
 //////////////////// post_tag_list ///////////////////////////
@@ -128,9 +126,7 @@ HEIBShortcode::add_shortcode('post_category_list', function($attr){
 	return post tag list 
 */
 HEIBShortcode::add_shortcode('post_tag_list', function($attr){
-	$atts = shortcode_atts(
-					array('separator' => null, 'parents' => '', 'empty' => __('N/A'))
-					, $attr);
+	$atts = HEIBShortcode::get_atts($attr);
 	$post = heib_get_post();
 
 	$content = '';
@@ -139,5 +135,5 @@ HEIBShortcode::add_shortcode('post_tag_list', function($attr){
 	}
 	return $content?$content:$atts['empty'];
 	
-}, 'post');
+}, 'post', array('separator' => null, 'parents' => '', 'empty' => __('N/A')));
 //////////////////// post_tag_list ///////////////////////////

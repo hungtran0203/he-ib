@@ -25,12 +25,11 @@ HEIBShortcode::add_shortcode('username', function($attr){
 */
 HEIBShortcode::add_shortcode('user_avatar', function($attr){
 	//setup default atts
-	$atts = shortcode_atts(
-					array('size' => 80)
-					, $attr);
+	$atts = HEIBShortcode::get_atts($attr);
+
 	$user = heib_get_user();
 	return get_avatar($user->ID, $atts['size']);
-}, 'user');
+}, 'user', array('size' => 80));
 //////////////////// user_avatar ///////////////////////////
 
 //////////////////// user_link ///////////////////////////
@@ -40,17 +39,16 @@ HEIBShortcode::add_shortcode('user_avatar', function($attr){
 HEIBShortcode::add_shortcode('user_link', function($attr){
 	$user = heib_get_user();
 
-	$atts = shortcode_atts(
-					array('length' => null, 'ending' => ' ...')
-					, $attr);
+	$atts = HEIBShortcode::get_atts($attr);
+
 	$displayName = $user->display_name;
 
 	if(!is_null($atts['length'])){
 		$displayName = heib_truncate($displayName, $atts['length'], array('ending'=>$atts['ending']));
 	}
-	
+
 	return '<a href="' . get_author_posts_url($user->ID) . '">' . $displayName . '</a>';
-}, 'user');
+}, 'user', array('length' => null, 'ending' => ' ...'));
 //////////////////// user_link ///////////////////////////
 
 //////////////////// user_url ///////////////////////////
@@ -69,9 +67,7 @@ HEIBShortcode::add_shortcode('user_url', function($attr){
 */
 HEIBShortcode::add_shortcode('user_recent_posts', function($attr){
 	//setup default atts
-	$atts = shortcode_atts(
-					array('count' => 3)
-					, $attr);
+	$atts = HEIBShortcode::get_atts($attr);
 
 	$user = heib_get_user();
 	$authors_posts = get_posts( array( 'author' => $user->ID, 'posts_per_page' => $atts['count'] ) );
@@ -82,5 +78,5 @@ HEIBShortcode::add_shortcode('user_recent_posts', function($attr){
   }
   $output .= '</ul>';
   return $output;
-}, 'user');
+}, 'user', array('count' => 3));
 //////////////////// user_recent_posts ///////////////////////////
