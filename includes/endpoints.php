@@ -154,8 +154,10 @@ add_filter('heib_process_endpoint__shortcodes.get', function($res){
 
 	$shortcodes = array_map(function($s){
 		$obj = new stdClass();
-		$obj->title = $s;
-		$obj->value = '[' . $s . ']';
+		$obj->title = $s['name'];
+		$obj->value = $s['name'];
+		$obj->atts = $s['atts'];
+		$obj->hints = $s['hints'];
 		return $obj;
 	}, $shortcodes);
 	$res->data = $shortcodes;

@@ -112,11 +112,95 @@ HEForm.Shortcode = React.createClass({
     this.forceUpdate();
   },
   changeShortcode: function(event){
-    var shortcode = event.target.value;
-    this.setValue(this.getValue() + shortcode);
+    this.setState({selectedShortcode:event.target.value});
+    //reset the current selected shortcode lab
+    var self = this;
+    var shortcodeOptions = this.getShortcodeOptions();
+    var selectedShortcode = shortcodeOptions.filter(function(shortcode){
+      return shortcode.value == event.target.value;
+    }).shift();
+
+    this.shortcodeLab = HE.lab.init(jQuery.extend(true, {}, selectedShortcode));
+  },
+  insertShortcode: function(event){
+    var shortcode = React.findDOMNode(this.refs.shortcode);
+
+    //generate shortcode attributes
+    var shortcodeValue = this.shortcodeLab.get('value')
+    var attStr = ''
+    var shortcodeOptions = this.getShortcodeOptions();
+    var defaultShortcode = shortcodeOptions.filter(function(shortcode){
+      return shortcode.value == shortcodeValue;
+    }).shift();
+    var shortcodeAtts = this.shortcodeLab.get('atts',{});
+    for(var att in shortcodeAtts){
+      if(shortcodeAtts[att] === defaultShortcode.atts[att]){
+        //using default att, don't need to include this att
+        delete shortcodeAtts[att]
+      } else {
+        attStr = ' ' + att + '="' + shortcodeAtts[att] + '"'
+      }
+    }
+
+    //generate shortcode string
+    var shortcodeStr = '[' + shortcodeValue + attStr + ']'
+    this.setValue(this.getValue() + shortcodeStr);
     if(this.props.onChangeCapture){
       this.props.onChangeCapture()  
     }
+
+    this.setState({showShortCodeForm: false, selectedShortcode:''});
+  },
+  showShortCodeForm: function(){
+    this.setState({showShortCodeForm: true});
+  },
+  cancleShortcodeForm: function(){
+    this.setState({showShortCodeForm: false, selectedShortcode:''});
+  },
+  getShortcodeAttributes: function(){
+    var self = this;
+    if(this.shortcodeLab && Object.keys(this.shortcodeLab.get('atts',{})).length > 0){
+      var shortcodeAtts = this.shortcodeLab.get('atts',{});
+      var attKeys = Object.keys(shortcodeAtts);
+      return (
+      <div className="he-Shortcode_Attributes" ref="atts">
+        <h4>Shortcode Attributes</h4>
+        {attKeys.map(function(key, id){
+          var attLab = self.shortcodeLab.link('atts.' + key);
+          var att = <HE.UI.components.Form.Text key={HE.utils.getTabIndex()} name={key} title={key} value={attLab}></HE.UI.components.Form.Text>
+          return att;
+        })
+        }
+      </div>
+      )
+    } else {
+      return null;
+    }
+  },
+  getShortcodeForm: function(){
+    var shortcodeOptions = this.getShortcodeOptions();
+    return (
+    <div className="he-Shortcode_Form">
+      <select className={this.getClass('form-control')} onChange={this.changeShortcode} ref="shortcode">
+        <option value=''>Select shortcode to insert</option>
+        {
+          shortcodeOptions.map(function(val, key){
+            return (<option key={key} value={val.value}>{val.title?val.title:val.value}</option>)
+          })
+        }
+      </select>
+      {this.state.selectedShortcode?
+      (<div>
+        {this.getShortcodeAttributes()}
+        <div className="he-groupBtn">
+          <button className="button button-primary button-row" onClick={this.insertShortcode}>Insert</button>
+          <button className="button button-row" onClick={this.cancleShortcodeForm}>Cancel</button>
+        </div>
+      </div>)
+      :null
+      }
+    </div>
+    )
   },
   render: function(){
     //get list of available shortcodes
@@ -135,14 +219,13 @@ HEForm.Shortcode = React.createClass({
           <textarea {...this.except(['className', 'value'])} className={this.getClass('form-control' + editorClass)} type="text" valueLink={this.getValueLink()} ref="input"/>
           {
           shortcodeOptions.length?
-            <select className={this.getClass('form-control')} onChange={this.changeShortcode} ref="shortcode">
-              <option value=''>Select shortcode to insert</option>
-              {
-                shortcodeOptions.map(function(val, key){
-                  return (<option key={key} value={val.value}>{val.title?val.title:val.value}</option>)
-                })
-              }
-            </select>
+            <div>
+            {
+            this.state.showShortCodeForm?
+            this.getShortcodeForm()
+            :<button className="button button-primary button-row" onClick={this.showShortCodeForm}>Insert Shortcode</button>
+            }
+            </div>
           :null
           }
         </div>

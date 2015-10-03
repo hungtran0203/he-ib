@@ -12,7 +12,7 @@ class HEIBShortcode {
 		//keep a list of shortcode associated with a domain, for listing purpose
 		if(!is_null($boxType) && $boxType !== ''){
 			HEIBShortcode::$tagsByBoxType[$boxType] = is_array(HEIBShortcode::$tagsByBoxType[$boxType])?HEIBShortcode::$tagsByBoxType[$boxType]:array();
-			HEIBShortcode::$tagsByBoxType[$boxType][] = $tag;//array('atts' => $defAtts);
+			HEIBShortcode::$tagsByBoxType[$boxType][] = array('name' => $tag, 'atts' => $defAtts, 'hints' => $hints);
 		}
 		//setup HEIBShortcodeHandler object
 		$handler = new HEIBShortcodeHandler($tag, $fn, $boxType, $defAtts, $hints);

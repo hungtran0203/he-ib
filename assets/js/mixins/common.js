@@ -26,19 +26,19 @@ var commonMixins = {
   			return this.props.title?true:false;
   		},
   		getTitle:  function(){
-  			if(typeof this.props.title === 'object'){
+  			if(HE.utils.isLab(this.props.title)){
   				return this.props.title.getVal();
   			}
   			return this.props.title;
   		},
   		getValue:  function(){
-  			if(typeof this.props.value === 'object'){
+  			if(HE.utils.isLab(this.props.value)){
   				return this.props.value.getVal();
   			}
   			return this.props.value;
   		},
   		setValue: function(val){
-  			if(typeof this.props.value === 'object'){
+  			if(HE.utils.isLab(this.props.value)){
   				return this.props.value.setVal(val);
   			}
   			else if(typeof this.props.value !== 'undefined') {
@@ -57,13 +57,6 @@ var commonMixins = {
         }
         return this.tabIndex;
       },
-
-      getTabIndex: function(){
-        if(this.tabIndex === undefined){
-          this.tabIndex = HE.utils.getTabIndex();
-        }
-        return this.tabIndex;
-      }
   	}
 
 module.exports = commonMixins;

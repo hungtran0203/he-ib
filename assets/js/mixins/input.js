@@ -15,7 +15,10 @@ var inputMixins = {
     var ui = this;
     var valueLink = {
       value: ui.getValue(),
-      requestChange: function(newVal){ui.setValue(newVal);}
+      requestChange: function(newVal){
+      	ui.setValue(newVal);
+      	ui.forceUpdate();
+      }
     };
     return valueLink;
 	}
