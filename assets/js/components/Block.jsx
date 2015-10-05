@@ -659,8 +659,8 @@ HEUI.BoxList = React.createClass({
               </span>
             </div>
             <div className="he-groupBtn">
-              <button className="button" onClick={this.editBox.bind(this, lab)}>Edit</button>
-              <button className="button" onClick={this.removeBox.bind(this, lab)}>Delete</button>
+              <button className="button" onClick={this.editBox.bind(this, lab)} title="Edit this box">Edit</button>
+              <button className="button" onClick={this.removeBox.bind(this, lab)} title="Delete this box">Delete</button>
             </div>
           </HE.UI.components.Panel>
 

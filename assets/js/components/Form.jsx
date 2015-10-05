@@ -223,7 +223,7 @@ HEForm.Shortcode = React.createClass({
             {
             this.state.showShortCodeForm?
             this.getShortcodeForm()
-            :<button className="button button-primary button-row" onClick={this.showShortCodeForm}>Insert Shortcode</button>
+            :<button className="button button-primary button-row" onClick={this.showShortCodeForm} title="Click to insert a shortcode">Insert Shortcode</button>
             }
             </div>
           :null

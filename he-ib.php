@@ -71,7 +71,11 @@ class HEIBApp {
 		$this->commonHooks();
 
 		$this->shortcodeHooks();
+
 		$this->ajaxHooks();
+
+		//hook for 3rd plugin to add additional endpoints/shortcodes
+		do_action('heib_hooks_loaded');
 	}
 
 	private function ajaxHooks(){
@@ -79,9 +83,6 @@ class HEIBApp {
 		add_action( 'wp_ajax_heib_ajax', 'HEIBApp::ajaxProcess' );
 		add_action( 'wp_ajax_nopriv_heib_ajax', 'HEIBApp::ajaxProcess' );
 
-		function prefix_ajax_add_foobar() {
-			// Handle request then generate response using WP_Ajax_Response
-		}
 	}
 
 	private function adminHooks(){
@@ -111,20 +112,27 @@ class HEIBApp {
 	public static function admin_menu(){
 		$parent_slug = 'heib_dashboard';
 		$handle = 'HEIBApp::getDashboardContent';
+		$capability = 'publish_pages';
 		//menu page
 		$page = add_menu_page( 	'Informative Boxes',
 						'Informative Boxes',
 						//'manage_options',
-						'publish_pages',
+						$capability,
 						$parent_slug,
 						$handle,
-						'',
-						null );
+						'');
+
+		//hight top menu
+		add_submenu_page( $parent_slug, 
+											'Settings', 
+											'Settings', 
+											$capability,
+											$parent_slug);
 
 		$designPage = add_submenu_page( $parent_slug, 
 											'Box Design', 
 											'Box Design', 
-											'publish_pages',
+											$capability,
 											'heib_design', 
 											'HEIBApp::getDesignContent' );
 		add_action( 'admin_print_styles-' . $designPage, 'HEIBApp::admin_enqueue_styles' );
@@ -144,11 +152,13 @@ class HEIBApp {
 	}
 	
 	public static function frontend_enqueue_scripts(){
-		add_action('wp_head',function(){
-			echo '<script type="text/javascript"> var ajaxurl = "' . admin_url('admin-ajax.php') .'"</script>';
-		});
-		wp_enqueue_script( 'heibfrontend', plugins_url( '/dist/frontend.bundle.js' , __FILE__ ), array( 'jquery' ));
-		wp_enqueue_script( 'heibfrontend_config', plugins_url( '/assets/js/config.js' , __FILE__ ), array( 'heibfrontend' ));
+		if(get_option('heib_enable', 1)){
+			add_action('wp_head',function(){
+				echo '<script type="text/javascript"> var ajaxurl = "' . admin_url('admin-ajax.php') .'"</script>';
+			});
+			wp_enqueue_script( 'heibfrontend', plugins_url( '/dist/frontend.bundle.js' , __FILE__ ), array( 'jquery' ));
+			wp_enqueue_script( 'heibfrontend_config', plugins_url( '/assets/js/config.js' , __FILE__ ), array( 'heibfrontend' ));			
+		}
 	}
 
 	public static function admin_content(){
@@ -163,6 +173,7 @@ class HEIBApp {
 	public static function register_plugin_settings(){
 		//register our settings
 		register_setting( 'heib-settings-group', 'heib_blacklist_urls' );
+		register_setting( 'heib-settings-group', 'heib_enable' );
 	}
 	public static function getDashboardContent(){
 		?>
@@ -173,6 +184,15 @@ class HEIBApp {
 		    <?php settings_fields( 'heib-settings-group' ); ?>
 		    <?php do_settings_sections( 'heib-settings-group' ); ?>
 		    <table class="form-table">
+		        <tr valign="top">
+			        <th scope="row">Enable Informative Box</th>
+			        <td>
+			        	<select name="heib_enable" value="<?php echo esc_attr( get_option('heib_enable') ); ?>">
+			        		<option value="1" <?php if(esc_attr( get_option('heib_enable', 1) ) == 1) echo "selected"?>>Yes</option>
+			        		<option value="0" <?php if(esc_attr( get_option('heib_enable', 1) ) == 0) echo "selected"?>>No</option>
+			        	</select>
+			        </td>
+		        </tr>		         
 		        <tr valign="top">
 			        <th scope="row">Do not show Informative Boxes for urls</th>
 			        <td>
