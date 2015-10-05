@@ -555,12 +555,13 @@ HEUI.Attributes = React.createClass({
             <HE.UI.components.Panel className="__Styling _pointer">
               <div>Style Settings</div>
               <div>
+              <i>(New CSS attributes can be inserted by adding inlined CSS from Browser Developer Tools)</i>
               {jQuery.map(attributes, function(value, key){
                 if(self.getLab()){
                   return (<div className="he-inline-form" key={key}>
                         <HE.UI.components.Form.Text onKeyDown={self.handleChangeStyles} name={key} title={HE.utils.camelCaseToDash(key)} value={self.getLab().link('style.' + key)}>
                         </HE.UI.components.Form.Text>
-                        <button className="button" onClick={self.removeAttribute.bind(self, key)}>X</button>
+                        <button className="button" onClick={self.removeAttribute.bind(self, key)} title="Remove this CSS attribute">X</button>
                         </div>)
                 } else {
                   return null;
@@ -624,6 +625,9 @@ HEUI.ConfigList = React.createClass({
               }):null
             }
             </div>
+            <div className="__Hints">
+              <i>(Drag & Drop available blocks into Box Design window to insert)</i>
+            </div>
           </div>;
   }
 })
@@ -642,9 +646,9 @@ HEUI.BoxList = React.createClass({
     var isPublished = parseInt(lab.get('published', 1));
     
     if(isPublished){
-      var publishBtn = <button className="he-button button button-primary" onClick={this.togglePublish.bind(this, lab)}>Enabled</button>
+      var publishBtn = <button className="he-button button button-primary" onClick={this.togglePublish.bind(this, lab)} title="This box is enabled. Click to disable.">Enabled</button>
     } else {
-      var publishBtn = <button className="he-button button button-info" onClick={this.togglePublish.bind(this, lab)}>Disabled</button>
+      var publishBtn = <button className="he-button button button-info" onClick={this.togglePublish.bind(this, lab)} title="This box is disabled. Click to enable.">Disabled</button>
     }
 
     return <HE.UI.components.Panel className="__Basic _pointer" data-collapsed={isCollapsed}>
@@ -722,7 +726,7 @@ HEUI.BoxList = React.createClass({
             {boxesList}
             <div className="he-NewBoxForm">
               <div className="__Title" ref="newBoxActions">
-                <button className="button button-primary" onClick={this.newBox}>New Box</button>
+                <button className="button button-primary" onClick={this.newBox} title="Add New Box">New Box</button>
               </div>
               <div className="he-hidden __Body" ref="newBoxForm">
                 <HE.UI.components.Form.Text name="title" title="Box Title" defaultValue="New Box" ref="newBoxTitle">
